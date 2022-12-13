@@ -8,15 +8,15 @@ COMPOSITION_STR = "He-3 2.46744e-10\nHe-4 0.000123372"
 
 
 class Test_MaterialComposition:
-    REPRESENTATION_FILE_PATH = fr'{os.getcwd()}\tests\test_Serpent2InputWriter\composition_file.txt'
+    # REPRESENTATION_FILE_PATH = fr'{os.getcwd()}\tests\test_Serpent2InputWriter\composition_file.txt'
 
     def test_str(self) -> None:
         comp = composition.MaterialComposition(components=COMPOSITION_STR)
         assert comp.__str__() == COMPOSITION_STR
 
-    def test_from_file(self) -> None:
-        comp = composition.MaterialComposition.from_file(self.REPRESENTATION_FILE_PATH)
-        assert comp.__str__() == COMPOSITION_STR
+    # def test_from_file(self) -> None:
+    #     comp = composition.MaterialComposition.from_file(self.REPRESENTATION_FILE_PATH)
+    #     assert comp.__str__() == COMPOSITION_STR
 
     def test_from_za(self) -> None:
         comp = composition.MaterialComposition.from_za({2003: 2.46744e-10, 2004: 0.000123372})
