@@ -1,4 +1,3 @@
-import os
 from SEAT.Serpent2InputWriter import composition
 
 TEST_NAME = "Test"
@@ -8,7 +7,7 @@ COMPOSITION_STR = "He-3 2.46744e-10\nHe-4 0.000123372"
 
 
 class Test_MaterialComposition:
-    REPRESENTATION_FILE_PATH = fr'{os.getcwd()}\tests\test_Serpent2InputWriter\composition_file.txt'
+    REPRESENTATION_FILE_PATH = 'composition_file.txt'
 
     def test_str(self) -> None:
         comp = composition.MaterialComposition(components=COMPOSITION_STR)
