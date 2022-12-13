@@ -1,1 +1,1 @@
-# SOUP
+# SEAT - Serpent EAsing Tool
