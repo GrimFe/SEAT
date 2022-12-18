@@ -14,8 +14,10 @@ class Test_Comment:
         comment = base.Comment(txt=TEST_NAME)
         assert comment.__str__() == f'/* {TEST_NAME} */\n'
 
-    def test_standalone(self) -> None:
-        comment = base.Comment(txt=TEST_NAME, standalone=True)
+
+class Test_StandaloneComment:
+    def test_str(self) -> None:
+        comment = base.StandaloneComment(txt=TEST_NAME)
         assert comment.__str__() == f'/* {TEST_NAME} */\n\n'
 
 
