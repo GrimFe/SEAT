@@ -1,5 +1,5 @@
 from SEAT.Serpent2InputWriter import Simulation
-from SEAT.Serpent2InputWriter import Comment
+from SEAT.Serpent2InputWriter import Comment, StandaloneComment
 from SEAT.Serpent2InputWriter.base import reformat
 
 
@@ -23,7 +23,7 @@ class Test_Simulation:
     geometry = Test_Geometry.geom
     depletion = Test_Depletion.dep
 
-    COMMENTS = {'Intro': Comment('Introductiory comment', standalone=True),
+    COMMENTS = {'Intro': StandaloneComment('Introductiory comment'),
                 'Geometry': Comment('Geometry comment'),
                 'Steps': Comment('Depletion comment'),
                 'Materials': Comment('Composition comment'),

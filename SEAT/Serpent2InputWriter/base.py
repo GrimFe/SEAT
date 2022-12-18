@@ -8,6 +8,7 @@ __all__ = [
     "surface_complement",
     # "cell_complement",
     "Comment",
+    "StandaloneComment",
     "Entity",
     "Other",
 ]
@@ -131,7 +132,7 @@ class Comment:
     """
     Handles:
     --------
-    Handles the comments to the Serpent 2 input
+    Base class to handle the comments to the Serpent 2 input
 
     Methods:
     --------
@@ -143,16 +144,9 @@ class Comment:
     * `txt`: string - the comment text
     """
     txt: str
-    standalone: bool = False
 
     def __str__(self):
-        if self.txt != '':
-            string = f'/* {self.txt} */\n'
-        else:
-            string = ''
-        if self.standalone:
-            string += '\n'
-        return string
+        return f'/* {self.txt} */\n' if self.txt != '' else ''
 
     def write(self, file: str):
         """
@@ -174,6 +168,26 @@ class Comment:
         Returns a variable pointing to a new memory allocation
         """
         return cp.deepcopy(self)
+
+
+@dataclass(slots=True)
+class StandaloneComment(Comment):
+    """
+    Handles:
+    --------
+    Handles the comments to the Serpent 2 input standing alone
+
+    Inherits from:
+    --------------
+    Comment
+
+    Required inherited parameters:
+    ------------------------------
+    * `txt`: string - the comment text
+    """
+
+    def __str__(self):
+        return f'/* {self.txt} */\n\n' if self.txt != '' else ''
 
 
 @dataclass(slots=True)
