@@ -283,7 +283,7 @@ class Material(Entity):
     def __str__(self):
         string = self.comment.__str__()
         if self._mixture is not None:
-            string += f"mix {self.name}\n{self._mixture}"
+            string += f"mix {self.name}" + self.inline_comment.__str__() + f"{self._mixture}"
         else:
             string += f"mat {self.name} {self.dens} {self.get_temperature_kind()} {self.get_temperature()}"
         # Check which cards work for the mix material and relate it to the transfer of kwargs in its definition
@@ -299,7 +299,7 @@ class Material(Entity):
             string += f" fix {self.fix[0]} {self.fix[1]}"
         if self.moder is not None:
             string += reformat(f" moder {self.moder}", ",'()[]{}")
-        string += '\n'
+        string += self.inline_comment.__str__()
         if self._mixture is None:
             string += self.representation.__str__()
         string += "\n"

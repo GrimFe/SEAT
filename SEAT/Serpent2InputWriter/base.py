@@ -9,6 +9,7 @@ __all__ = [
     # "cell_complement",
     "Comment",
     "StandaloneComment",
+    "InlineComment",
     "Entity",
     "Other",
 ]
@@ -191,6 +192,27 @@ class StandaloneComment(Comment):
 
 
 @dataclass(slots=True)
+class InlineComment(Comment):
+    """
+    Handles:
+    --------
+    Handles the in-line comments to the Serpent 2 input
+
+    Inherits from:
+    --------------
+    Comment
+
+    Required inherited parameters:
+    ------------------------------
+    * `txt`: string - the comment text
+    """
+
+    def __str__(self):
+        txt = ''.join(self.txt.split('\n'))
+        return f'  % {txt}\n' if txt != '' else '\n'
+
+
+@dataclass(slots=True)
 class Entity:
     """
     Handles:
@@ -200,10 +222,13 @@ class Entity:
     Takes:
     ------
     * `name`: string or integer - is the identity of the Serpent 2 entity
-    * `comment`: Comment object instance - is the comment to the Serpent entity
+    * `comment`: Comment object instance - is the comment to the Serpent entity. Default is empty comment
+    * `inline_comment`: InlineComment object instance - is the comment to be written on the same line: ment for short
+                        description of the specific instance. Default is empty comment
     """
     name: any
     comment: Comment = Comment('')
+    inline_comment: InlineComment = InlineComment('')
 
     def __str__(self):
         string = self.comment.__str__() + f"""{self.name}"""

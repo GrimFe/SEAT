@@ -21,6 +21,12 @@ class Test_StandaloneComment:
         assert comment.__str__() == f'/* {TEST_NAME} */\n\n'
 
 
+class Test_InlineComment:
+    def test_str(self) -> None:
+        comment = base.InlineComment(txt=TEST_NAME)
+        assert comment.__str__() == f'  % {TEST_NAME}\n'
+
+
 class Test_Entity:
     def test_str(self) -> None:
         entity = base.Entity(name=TEST_NAME)
