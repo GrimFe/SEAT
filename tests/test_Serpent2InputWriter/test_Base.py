@@ -24,7 +24,7 @@ class Test_StandaloneComment:
 class Test_InlineComment:
     def test_str(self) -> None:
         comment = base.InlineComment(txt=TEST_NAME)
-        assert comment.__str__() == f'  % {TEST_NAME}'
+        assert comment.__str__() == f'  % {TEST_NAME}\n'
 
 
 class Test_Entity:

@@ -209,7 +209,7 @@ class InlineComment(Comment):
 
     def __str__(self):
         txt = ''.join(self.txt.split('\n'))
-        return f'  % {txt}' if txt != '' else ''
+        return f'  % {txt}\n' if txt != '' else '\n'
 
 
 @dataclass(slots=True)

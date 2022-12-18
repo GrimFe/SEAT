@@ -140,7 +140,7 @@ class Pin(Universe):
     radi: list[tuple[Material, float]] = None
 
     def __str__(self):
-        string = self.comment.__str__() + f"pin {self.name}\n"
+        string = self.comment.__str__() + f"pin {self.name}" + self.inline_comment.__str__()
         for mat, r in self.radi:
             if r == 0 or r is None:
                 r_ = ''
@@ -219,7 +219,7 @@ class Surface(Entity):
         string += f"surf {self.name} {self.kind}"
         for p in self.parameters:
             string += f" {p}"
-        string += "\n"
+        string += self.inline_comment.__str__()
         return string
 
     def write(self, file: str):
@@ -315,7 +315,7 @@ class Cell(Entity):
             string += f" {self.kind}"
         for s in self.delimiters:
             string += f' {s._operator} {s.name}'
-        string += '\n'
+        string += self.inline_comment.__str__()
         return string
 
     def write(self, file: str):
@@ -536,7 +536,7 @@ class Lattice(NestedUniverse):
         string += f"lat {self.name} {self.typ}"
         for p in self.parameters:
             string += f" {p}"
-        string += '\n'
+        string += self.inline_comment.__str__()
         string += self.representation.__str__()
         return string
 
