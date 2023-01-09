@@ -21,6 +21,10 @@ class Test_MaterialComposition:
         comp = composition.MaterialComposition.from_za({2003: 2.46744e-10, 2004: 0.000123372})
         assert comp.__str__() == '2003 2.46744e-10\n2004 0.000123372'
 
+    def test_from_za_mass(self) -> None:
+        comp = composition.MaterialComposition.from_za({2003: 2.46744e-10, 2004: 0.000123372}, atomic=False)
+        assert comp.__str__() == '2003 -2.46744e-10\n2004 -0.000123372'
+
     def test_from_zam(self) -> None:
         comp = composition.MaterialComposition.from_za({20030: 2.46744e-10, 20040: 0.000123372})
         assert comp.__str__() == '20030 2.46744e-10\n20040 0.000123372'

@@ -57,37 +57,40 @@ class MaterialComposition:
         return cls(components)
 
     @classmethod
-    def from_za(cls, za: dict):
+    def from_za(cls, za: dict[int, float], atomic: bool = True):
         """
         Creates material composition from a dictionary
 
         Takes:
         ------
-        * `za` is a dictionary having the ZA number as keys and the fraction as values
+        * `za` is a dictionary having the ZA number as keys and the fraction (as positive floats) as values
+        * `atomic` is a flag to select whether the passed fractions are atomic or mass fractions.
+                    Default is True corresponding to atomic fractions.
+                    Serpent2 uses negative fraction values to identify mass fractions.
         """
         components = reformat(str(za), "{}:").replace(', ', '\n')
         return cls(components)
 
     @classmethod
-    def from_zam(cls, zam: dict):
+    def from_zam(cls, zam: dict[int, float], **kwargs):
         """
         Creates material composition from a dictionary
 
         Takes:
         ------
-        * `zam` is a dictionary having the ZAM number as keys and the fraction as values
+        * `zam` is a dictionary having the ZAM number as keys and the fraction (as positive floats) as values
         """
         components = dict(zip([zam2za(z)[0] for z in zam.keys()], zam.values()))
-        return cls.from_za(components)
+        return cls.from_za(components, **kwargs)
 
     @classmethod
-    def from_nuclides(cls, nuclides: dict):
+    def from_nuclides(cls, nuclides: dict[str, float], **kwargs):
         """
         Creates material composition from a dictionary
 
         Takes:
         ------
-        * `nuclides`: dictionary - has the nuclides as keys and the composition as values.
+        * `nuclides`: dictionary - has the nuclides as keys and the composition (as positive floats) as values.
             Nuclides shall be in the form Nn-###, e.g.: U-235, H-1, Am-241, Am-241m to have them represented as strings
             in the Serpent2 simulation input file, other options which would get converted to ZA are:
             * NN###
@@ -101,7 +104,7 @@ class MaterialComposition:
         else:
             components = dict(zip([nuclide2za(i.lower().capitalize())[0] for i in nuclides.keys()],
                                   nuclides.values()))
-            return cls.from_za(components)
+            return cls.from_za(components, **kwargs)
 
     @classmethod
     def from_output_file(cls, file: str):  # interaction with serpentTools missing
