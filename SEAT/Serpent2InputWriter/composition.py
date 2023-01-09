@@ -68,6 +68,7 @@ class MaterialComposition:
                     Default is True corresponding to atomic fractions.
                     Serpent2 uses negative fraction values to identify mass fractions.
         """
+        za_ = za if atomic else {k: -v for k, v in za.items()}
         components = reformat(str(za), "{}:").replace(', ', '\n')
         return cls(components)
 
