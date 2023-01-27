@@ -286,7 +286,11 @@ class MaterialRepresentation(MaterialComposition):
             {ZA}.{temperature}{data_type}
         """
         temperature, data_type = self.get_temperature(), self.data_type
-        return [f"{nuclide2za(k)[0]}.{temperature}{data_type}" for k in self.components.keys()]
+        out = [f"{k}.{temperature}{data_type}" for k in self.components.keys()
+               ] if self._already_za else [
+                   f"{nuclide2za(k)[0]}.{temperature}{data_type}"
+                   for k in self.components.keys()]
+        return out
 
     def get_values(self):
         return [v for v in self.components.values()]

@@ -136,8 +136,8 @@ class Test_MaterialRepresentation:
         r1 = composition.MaterialRepresentation.from_zam({20030: 2.46744e-10, 20040: 0.000123372}, atomic=True, tmp=TEMPERATURE)
         assert r1.__str__() == self.REPRESENTATION_STRING
         # test za builder
-        r1 = composition.MaterialRepresentation.from_za({2003: 2.46744e-10, 2004: 0.000123372}, atomic=True, tmp=TEMPERATURE)
-        assert r1.__str__() == self.REPRESENTATION_STRING
+        r2 = composition.MaterialRepresentation.from_za({2003: 2.46744e-10, 2004: 0.000123372}, atomic=True, tmp=TEMPERATURE)
+        assert r2.__str__() == self.REPRESENTATION_STRING
 
     def test_get_temperature(self) -> None:
         assert MATERIAL_REPRESENTATION.get_temperature() == '{:.0f}'.format(TEMPERATURE / 100)
