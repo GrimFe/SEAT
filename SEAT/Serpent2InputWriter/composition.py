@@ -1,6 +1,6 @@
 import copy as cp
 import warnings
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -52,12 +52,17 @@ class MaterialComposition:
     """
     components: dict[str, float]
     atomic: bool
+    _already_za: bool = field(init=False, default=False)
 
     def __str__(self):
-        factor = 1 if self.atomic else -1
-        nuclides = {nuclide2zam(k.lower().capitalize()): factor * v for k, v in self.components.items()}
-        string = reformat(str(nuclides).replace(',', '\n'), '{} ')
-        return string.replace(':', ' ')
+        if not self._already_za:
+            factor = 1 if self.atomic else -1
+            nuclides = {nuclide2zam(k.lower().capitalize()): factor * v for k, v in self.components.items()}
+            string = reformat(str(nuclides).replace(',', '\n'), '{} ').replace(':', ' ')
+        else:
+            za = self.components
+            string = reformat(str(za).replace(',', '\n'), '{} ').replace(':', ' ')
+        return string
 
     @classmethod
     def parse(cls, string: str, separator=None, *args, **kwargs):
@@ -157,6 +162,19 @@ class MaterialComposition:
         """
         components = dict(zip([zam2nuclide(z) for z in zam.keys()], zam.values()))
         return cls(components, *args, **kwargs)
+
+    @classmethod
+    def from_za(cls, za: dict[int, float], *args, **kwargs):
+        """
+        Creates material composition from a dictionary
+
+        Takes:
+        ------
+        * `za` is a dictionary having the ZA number as keys and the fraction (as positive floats) as values
+        """
+        instance = cls(za, *args, **kwargs)
+        instance._already_za = True
+        return instance
 
     @classmethod
     def from_sep_nuclides(cls, nuclides: dict[str, float], sep='', *args, **kwargs):
@@ -268,7 +286,11 @@ class MaterialRepresentation(MaterialComposition):
             {ZA}.{temperature}{data_type}
         """
         temperature, data_type = self.get_temperature(), self.data_type
-        return [f"{nuclide2za(k)[0]}.{temperature}{data_type}" for k in self.components.keys()]
+        out = [f"{k}.{temperature}{data_type}" for k in self.components.keys()
+               ] if self._already_za else [
+                   f"{nuclide2za(k)[0]}.{temperature}{data_type}"
+                   for k in self.components.keys()]
+        return out
 
     def get_values(self):
         return [v for v in self.components.values()]

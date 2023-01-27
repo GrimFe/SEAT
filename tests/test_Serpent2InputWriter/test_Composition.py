@@ -100,6 +100,10 @@ class Test_MaterialComposition:
         comp = composition.MaterialComposition.from_zam({20030: 2.46744e-10, 20040: 0.000123372}, self.atomic)
         assert comp.__str__() == '20030 2.46744e-10\n20040 0.000123372'
 
+    def test_from_za(self) -> None:
+        comp = composition.MaterialComposition.from_za({2003: 2.46744e-10, 2004: 0.000123372}, self.atomic)
+        assert comp.__str__() == '2003 2.46744e-10\n2004 0.000123372'
+
     def test_from_sep_nuclides(self) -> None:
         comp = composition.MaterialComposition.from_sep_nuclides({'He-3': 2.46744e-10, 'He-4': 1.23372e-4}, sep='-', atomic=self.atomic)
         assert comp.__str__() == COMPOSITION_STR
@@ -126,8 +130,14 @@ class Test_MaterialRepresentation:
     def test_str(self) -> None:
         representation = MATERIAL_REPRESENTATION
         assert representation.__str__() == self.REPRESENTATION_STRING
-        representation1 = composition.MaterialRepresentation(COMPONENTS, True, TEMPERATURE, data_type='b')
+        representation1 = composition.MaterialRepresentation(COMPONENTS, atomic=True, tmp=TEMPERATURE, data_type='b')
         assert representation1.__str__() == self.REPRESENTATION_STRING.replace('c', 'b')
+        # test zam builder
+        r1 = composition.MaterialRepresentation.from_zam({20030: 2.46744e-10, 20040: 0.000123372}, atomic=True, tmp=TEMPERATURE)
+        assert r1.__str__() == self.REPRESENTATION_STRING
+        # test za builder
+        r2 = composition.MaterialRepresentation.from_za({2003: 2.46744e-10, 2004: 0.000123372}, atomic=True, tmp=TEMPERATURE)
+        assert r2.__str__() == self.REPRESENTATION_STRING
 
     def test_get_temperature(self) -> None:
         assert MATERIAL_REPRESENTATION.get_temperature() == '{:.0f}'.format(TEMPERATURE / 100)
