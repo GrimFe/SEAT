@@ -359,5 +359,6 @@ class Other:
         --------
         SEAT.Other
             a copy of the `SEAT.Other` instance.
+
         """
         return cp.deepcopy(self)
