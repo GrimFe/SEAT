@@ -18,9 +18,41 @@ XSDATA_FOLDER = pkg_resources.resource_filename(SEAT._names.PAKAGE_NAME,
                                                 f'{SEAT._names.XSDATA_FOLDER_NAME}/')
 
 def are_elements(keys: set[str]) -> bool:
+    """
+    Checks whether all the items of a set are element symbols.
+
+    Parameters
+    ----------
+    keys : set[str]
+        the set of strings to check.
+
+    Returns
+    -------
+    bool
+        True if all the items in the `keys` are element symbols.
+
+    """
     return bool(np.prod(([k.isalpha() for k in keys])))
 
 def are_nuclides(keys: set[str]) -> bool:
+    """
+    Checks whether all the items of a set are nuclide symbols.
+
+    Parameters
+    ----------
+    keys : set[str]
+        the set of strings to check.
+
+    Returns
+    -------
+    bool
+        True if all the items in the `keys` are nuclide symbols.
+
+    Note
+    ----
+    Does not check the existence of a nuclide. It rather checks the format.
+
+    """
     return bool(np.prod([k.isalnum() for k in keys])) and bool(np.prod([not k.isalpha() for k in keys]))
 
 def unfold_composite(composite: dict[str, float]) -> dict[str, float]:
@@ -37,13 +69,21 @@ def get_existing_xs(library: str) -> set:
     Parameters
     ----------
     library : str
-        The library of which the available cross section set should be got.
+        the library of which the available cross section set should be got.
+        Available `library` values are:
+            - 'endfb71': ENDF/B-VII.1
+            - 'endfb80': ENDF/B-VII.1
+            - 'jeff32': JEFF-3.2
+            - 'jeff33': JEFF-3.3
+            - 'jeff40t1': JEFF-4.0 test version 1
+            - 'jeff312': JEFF-3.1.2
+            - 'jendl40u': JENDL-4.0u
 
     Returns
     -------
     set
-        The set of nuclides `'Nnxxx'` of which the cross section is evaluated
-        in the library.
+        nuclide symbols `'Nnxxx'` of which the cross section is evaluated
+        in `library`.
 
     """
     XSDATA_FILE = pkg_resources.resource_filename(SEAT._names.PAKAGE_NAME,
@@ -54,7 +94,7 @@ def get_existing_xs(library: str) -> set:
 
 def pollute(abundance: dict[str: float], pollutants: dict[str: float]) -> dict:
     """
-    Pollute one element with some exetrnal nuclides.
+    Pollutes one nuclide-defined material with some exetrnal nuclides.
 
     Parameters
     ----------
@@ -62,7 +102,7 @@ def pollute(abundance: dict[str: float], pollutants: dict[str: float]) -> dict:
         * key: the symbol of the nuclide in the reference material
         * value: the fraction of the nuclide in the reference material.
     pollutants : dict[str: float]
-        * key: the symbol of the pollutant nuclide
+        * key: the symbol of the of the pollutant nuclide
         * value: the pollution fraction (>0, <1).
 
     Returns
@@ -80,7 +120,7 @@ def pollute(abundance: dict[str: float], pollutants: dict[str: float]) -> dict:
 
 def enrich(abundance: dict[str: float], enrichers: dict[str, float]) -> dict:
     """
-    Enrich one element in a set of nuclides.
+    Enriches one nuclide-defined material in a set of nuclides.
 
     Parameters
     ----------
