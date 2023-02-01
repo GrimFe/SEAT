@@ -274,7 +274,7 @@ class Entity:
 
     Args :
     -----
-    name : str or int
+    name : str | int
         the identity of the Serpent 2 entity.
     comment : SAET.Comment, optional
         the comment to the Serpent entity. The default is SEAT.Comment('').
