@@ -306,6 +306,17 @@ class Entity:
         """
         print(id(self))
 
+    def write(self, file: str, mode: str='a'):
+        """
+        Writes to a file
+
+        Takes:
+        ------
+        * `file`: string - is the name of the file where to write
+        """
+        with open(file, mode=mode) as f:
+            f.write(self.__str__())
+
 
 @dataclass(slots=True)
 class Other:
