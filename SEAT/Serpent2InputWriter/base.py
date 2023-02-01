@@ -270,7 +270,7 @@ class InlineComment(Comment):
 class Entity:
     """
     Base class to handle the comments to the Serpent 2 input. Provides them
-    with an identity and comments.
+    with an identity, comments and a write method.
 
     Args :
     -----
@@ -286,6 +286,9 @@ class Entity:
     --------
     assess :
         prints the `SEAT.Entity` python id.
+    write :
+        writes the `SEAT.Entity` to a file.
+
     """
     name: str | int
     comment: Comment = Comment('')
@@ -308,11 +311,19 @@ class Entity:
 
     def write(self, file: str, mode: str='a'):
         """
-        Writes to a file
+        Writes the `SEAT.Entity.__str__()` to a file.
 
-        Takes:
-        ------
-        * `file`: string - is the name of the file where to write
+        Args:
+        -----
+        file : str
+            the name of the file where to write.
+        mode : str, optional
+            mode to open the file. The default is 'a'.
+
+        Returns
+        -------
+        None.
+
         """
         with open(file, mode=mode) as f:
             f.write(self.__str__())
