@@ -2,8 +2,8 @@ import warnings
 
 import numpy as np
 import copy as cp
-from .base import Entity, reformat
-from .composition import Material
+from SEAT.Serpent2InputWriter.base import Entity, reformat
+from SEAT.Serpent2InputWriter.composition import Material
 from dataclasses import dataclass, field
 
 __author__ = "Federico Grimaldi"
@@ -28,26 +28,35 @@ class ExistingUniverse(Exception):
 @dataclass(slots=True)
 class Universe(Entity):
     """
-    Handles:
-    --------
     Handles the universe definition as well as operations on a universe.
+    Inherits from `SEAT.Entity`.
+    
+    Attributes
+    ----------
+    name : str | int
+        the identity of the Serpent 2 entity.
+    comment : `SEAT.Comment`, optional
+        the comment to the Serpent entity. The default is SEAT.Comment('').
+    inline_comment : `SEAT.InlineComment`, optional
+        the comment to be written on the same line as the Serpent 2 entity id.
+        The default is SEAT.Comment('').
+    materials : list[`SEAT.Material`], optional
+        the materials in the universe. The default is [].
 
-    Methods:
-    --------------
-    * `get_materials()`: returns a list with the materials in the Universe.
+    Methods
+    -------
+    assess :
+        prints the `SEAT.Universe` python id.
+    write :
+        writes the `SEAT.Universe` to a file.
+    get_materials :
+        lists the materials in the Universe.
 
-    Inherits from:
-    --------------
-    Entity
-
-    Required inherited parameters:
-    ------------------------------
-    * `name`: string or integer - is the identity of the Serpent 2 entity
     """
-    materials: list[Material] = None
+    materials: list[Material] = field(default_factory=list)
 
     def __post_init__(self):
-        self.materials = self.materials if self.materials is not None else [None]
+        self.materials = self.materials if self.materials else [None]  # is this really needed?
         global UniversesIncluded
         if self.name not in UniversesIncluded.keys():
             UniversesIncluded[self.name] = self
@@ -58,9 +67,20 @@ class Universe(Entity):
         string = self.comment.__str__() + f"{self.name}"
         return string
 
-    def get_materials(self) -> list:
-        # this method is here for consistency with the inheriting classes. It is called iteratively in the nested
-        # universes
+    def get_materials(self) -> list[Material]:
+        """
+        Lists the materials in the universe.
+
+        Returns
+        -------
+        list[`SEAT.Material`]
+            the materials in the universe.
+
+        Note
+        ----
+        Called iteratively in the nested universes.
+
+        """
         return self.materials
 
 
@@ -68,23 +88,33 @@ class Universe(Entity):
 class NestedUniverse(Universe):
     """
     Handles universes with sub-universes.
+    Inherits from Universe.
 
-    Methods:
-    --------------
-    * `add_nested()`: adds a Universe-like object to the nested universe.
-    * `get_materials()`: returns a list with the materials in the Universe.
+    Attributes
+    ----------
+    name : str | int
+        the identity of the Serpent 2 entity.
+    comment : `SEAT.Comment`, optional
+        the comment to the Serpent entity. The default is SEAT.Comment('').
+    inline_comment : `SEAT.InlineComment`, optional
+        the comment to be written on the same line as the Serpent 2 entity id.
+        The default is SEAT.Comment('').
+    materials : list[`SEAT.Material`], optional
+        the materials in the universe. The default is [].
+    daughters : list[Universe], optional
+        the universes nested in the universe.
 
-    Inherits from:
-    --------------
-    Universe
+    Methods
+    -------
+    assess :
+        prints the `SEAT.NestedUniverse` python id.
+    write :
+        writes the `SEAT.NestedUniverse` to a file.
+    get_materials :
+        lists with the materials in the universe.
+    nest_universe :
+        adds a Universe-like object to the nested universe.
 
-    Takes:
-    ------
-    * `daughters`: list - list of sub-universes in the nested universe.
-
-    Required inherited parameters:
-    ------------------------------
-    * `name`: string or integer - is the identity of the Serpent 2 entity
     """
     daughters: list[Universe] = field(default_factory=list)
 
@@ -95,49 +125,82 @@ class NestedUniverse(Universe):
         string = self.comment.__str__() + f"{self.name}"
         return string
 
-    def add_universe(self, uni: [Universe]):
-        if isinstance(self.daughters, list):
-            self.daughters.append(uni)
-        else:
-            self.daughters = [uni]
-
     def get_materials(self) -> list:
+        """
+        Lists the materials in the nested universe.
+
+        Returns
+        -------
+        list[`SEAT.Material`]
+            the materials in the nested universe.
+
+        Note
+        ----
+        Called iteratively in the nested universes.
+
+        """
         out = []
         for uni in self:
             out.extend(uni.get_materials())
         return out
 
+    def nest_universe(self, uni: Universe):
+        """
+        Nests a universe in the nested universe.
+
+        Parameters
+        ----------
+        uni : Universe
+            the universe to nest.
+
+        Returns
+        -------
+        None.
+
+        """
+        if isinstance(self.daughters, list):
+            self.daughters.append(uni)
+        else:
+            self.daughters = [uni]
+
 
 @dataclass(slots=True)
 class Pin(Universe):
     """
-    Handles:
-    --------
     Handles the pin definition as well as operations on single pins.
+    Inherits from Universe.
+
+    Attributes
+    ----------
+    name : str | int
+        the identity of the Serpent 2 entity.
+    comment : `SEAT.Comment`, optional
+        the comment to the Serpent entity. The default is SEAT.Comment('').
+    inline_comment : `SEAT.InlineComment`, optional
+        the comment to be written on the same line as the Serpent 2 entity id.
+        The default is SEAT.Comment('').
+    materials : list[`SEAT.Material`], optional
+        the materials in the universe. The default is [].
+    radi : list[tuple[`SEAT.Material`, float]], optional
+        couples the Material and its radius (0 or `None` for external material).
+        The default is [].
 
     Methods:
     --------
-    * `write()`: internal method to write on a file with proper formatting for Serpent 2 input cell definition
+    assess :
+        prints the `SEAT.Pin` python id.
+    write :
+        writes the `SEAT.Pin` to a file.
+    get_materials :
+        lists the materials in the Pin.
 
     Class methods:
     --------------
-    * `from_dict()`: creates the Pin from a dictionary coupling Material and radius.
-    * `get_materials()`: returns a list with the materials in the Pin.
+    from_dict :
+        creates the Pin from a dictionary coupling Material and radius.
 
-    Inherits from:
-    --------------
-    Universe
-
-    Takes:
-    ------
-    * `radi`: list - couples in tuples the Material object instance and its radius (0 or `None` for external material).
-        It has Material instances as first elements and floats as second elements. Default is `None`
-
-    Required inherited parameters:
-    ------------------------------
-    * `name`: string or integer - is the identity of the Serpent 2 universe
     """
-    radi: list[tuple[Material, float]] = None
+    radi: list[tuple[Material, float]] = field(default_factory=list)
 
     def __str__(self):
         string = self.comment.__str__() + f"pin {self.name}" + self.inline_comment.__str__()
@@ -157,49 +220,66 @@ class Pin(Universe):
 
         Creates the Pin from a dictionary coupling Material and radius.
 
-        Takes:
-        ------
+        Parameters
+        ----------
         * `radi`: dictionary - couples in the Material object instance (key) and its radius (value).
                 0 or None for external material.
         """
         return cls([(k, v) for k, v in radi.items()], *args, **kwargs)
 
-    def get_materials(self) -> list:
+    def get_materials(self) -> list[Material]:
+        """
+        Lists the materials in the pin.
+
+        Returns
+        -------
+        list[`SEAT.Material`]
+            the materials in the pin.
+
+        Note
+        ----
+        Called iteratively in the nested universes.
+
+        """
         return [t[0] for t in self.radi]
 
 
 @dataclass(slots=True)
 class Surface(Entity):
     """
-    Handles:
-    --------
     Handles the surface definition as well as operations on single surfaces.
+    Inherits from `SEAT.Entity`.
+    
+    Attributes
+    ----------
+    name : str | int
+        the identity of the Serpent 2 entity.
+    comment : `SEAT.Comment`, optional
+        the comment to the Serpent entity. The default is SEAT.Comment('').
+    inline_comment : `SEAT.InlineComment`, optional
+        the comment to be written on the same line as the Serpent 2 entity id.
+        The default is SEAT.Comment('').
+    parameters : list[float], optional
+        the input parameters required by the type expressed by `kind`. The
+        default is [].
+    kind : str, optional
+        identifies the surface type. The default is 'sqc'.
+    _operator: str, optional
+        the surface oprator. The default is ''.
 
-    Methods:
-    --------
-    * `write()`: internal method to write on a file with proper formatting for Serpent 2 input surface definition.
-    * `flip()`: changes the operator of the surface flipping the direction of the normal direction to it.
-                Applies '-' operator on the surface complementing it.
-    * `copy()`: deep copies the object.
+    Methods
+    -------
+    assess :
+        prints the `SEAT.Surface` python id.
+    write :
+        writes the `SEAT.Surface` to a file.
+    flip :
+        changes the operator of the surface to '-' flipping its normal direction.
+    copy :
+        copies the object instance to another memory allocation.
 
-    Inherits from:
-    --------------
-    Entity
-
-    Takes:
-    ------
-    * `parameters`: list - list of the input parameters required by the type expressed by `kind`. Default is `None`.
-    * `kind`: string - identifies the surface type, default is `'sqc'`.
-
-    Required inherited parameters:
-    ------------------------------
-    * `name`: string or integer - is the identity of the Serpent 2 entity
-
-    Private parameters:
-    -------------------
-    * `_operator`: string - operator to the surface. Default is `''`.
     """
-    parameters: list = None
+    parameters: list[float] = field(default_factory=list)
     kind: str = 'sqc'
     _operator: str = ''
 
@@ -213,12 +293,21 @@ class Surface(Entity):
 
     def flip(self, ret=True):
         """
-        Method to apply '-' operator to the surface allowing the user to consider its complement.
-        Flips the direction of the normal to the surface. It happens in place.
+        Method to apply '-' operator to the surface allowing the user to
+        consider its complement. Flips the direction of the normal to the
+        surface. It happens in place.
 
-        Takes:
-        ------
-        * `ret`: boolean - flag to decide whether to return the flipped object. Default is `True`
+        Parameters
+        ----------
+        ret : bool
+            defines whether the flipped object should be returned. The default
+            is True.
+
+        Returns
+        -------
+        `SEAT.Surface`
+            teh flipped surface if `ret` is True, else None.
+
         """
         self._operator = '-'
         if ret:
@@ -228,8 +317,8 @@ class Surface(Entity):
         """
         Copies the object instance to another memory allocation.
 
-        Returns:
-        --------
+        Returns
+        -------
         Returns a variable pointing to the new memory allocation
         """
         return cp.deepcopy(self)
@@ -238,45 +327,54 @@ class Surface(Entity):
 @dataclass(slots=True)
 class Cell(Entity):
     """
-    Handles:
-    --------
     Handles the cell definition as well as operations on single cells.
+    Inherits from `SEAT.Entity`.
+    
+    
+    Attributes
+    ----------
+    name : str | int
+        the identity of the Serpent 2 entity.
+    comment : `SEAT.Comment`, optional
+        the comment to the Serpent entity. The default is SEAT.Comment('').
+    inline_comment : `SEAT.InlineComment`, optional
+        the comment to be written on the same line as the Serpent 2 entity id.
+        The default is SEAT.Comment('').
+    delimiters : list[`SEAT.Surface`]
+        the surfaces encompassing the cell. The default is [].
+    father : `SEAT.NestedUniverse`
+        the universe the cell belongs to. The nesting of the Cell in the
+        universe is done right after the initialisation. The default is `None`.
+    kind : str
+        identifies the cell type.
+        Allowed `kind` values are:
+            - 'fill': to fill the cell with a universe.
+            - 'material': to fill the cell with a material; requires passing material to the Cell.
+            - 'outside': to define outside cells.
+        The default is 'outside'.
+    filler : `SEAT.Universe`
+        the universe the Cell belongs to in case `kind` is 'fill'. Only one
+        single filler universe is allowed. The default is None.
+    material : `SEAT.Material`
+        the cell material in case `kind` is 'material'. The default is None.
 
-    Methods:
+    Methods
     --------
-    * `write()`: internal method to write on a file with proper formatting for Serpent 2 input cell definition
-    * `get_materials()`: returns a list with the materials in the Cell.
+    assess :
+        prints the `SEAT.Entity` python id.
+    write :
+        writes the `SEAT.Entity` to a file.
+    get_materials :
+        lists the materials in the Cell.
+    _nest_to_father :
+        nest the Cell to the father nested universe.
 
-    Inherits from:
-    --------------
-    Entity
-
-    Takes:
-    ------
-    * `delimiters`: list - is a list of the Surface object instances encompassing the cell. Default is `None`.
-    * `father`: NestedUniverse object instance - is the universe the cell belongs to.
-        The nesting of the Cell in the universe is done right after the initialisation.
-        Default is `None`.
-    * `kind`: string - refers to the cell type. It can either be:
-        - `'fill'` - to fill the cell with a universe
-        - `'material'` - to fill the cell with a material - requires passing material to the Cell
-        - `'outside'` - to define outside cells
-        Default is `'outside'`.
-    * `filler`: Universe-like object instance - is the universe the Cell belongs to in case `kind` is `'fill'`.
-        Only one single filler universe is allowed.
-        Default is None.
-    * `material`: Material object instance - is the cell material in case `kind` is `'material'`. Default is None.
-
-    Required inherited parameters:
-    ------------------------------
-    * `name`: string or integer - is the identity of the Serpent 2 universe
-    * `father`: Universe object instance - is the universe the Cell belongs to
     """
 
-    delimiters: list[Surface] = None
+    delimiters: list[Surface] = field(default_factory=list)
     father: NestedUniverse = None  # required
     kind: str = 'outside'
-    filler: Universe | None = None  # should this be a nested universe instead?
+    filler: Universe | None = None
     material: Material | None = None
 
     def __post_init__(self):
@@ -297,48 +395,72 @@ class Cell(Entity):
         return string
 
     def _nest_to_father(self):
+        """
+        Nests the Cell to the fater universe. This is done accessing and
+        adapting the UniversesIncluded global variable.
+
+        Returns
+        -------
+        None.
+
+        """
         global UniversesIncluded
         # The father universe will always be included in UniversesIncluded as the user is asked to pass a Universe to
-        # the Cell creation. When creating the Universe, it gets also added to the UniversesIncluded
+        # the Cell creation. When creating the Universe, it gets also added to the UniversesIncluded.
         if self.kind == 'fill':
-            UniversesIncluded[self.father.name].add_universe(self.filler)
+            UniversesIncluded[self.father.name].nest_universe(self.filler)
         elif self.kind == 'material':
             sub_universe_number = len(UniversesIncluded[self.father.name].daughters)
             try:
-                UniversesIncluded[self.father.name].add_universe(
-                    Universe(name=f'{self.father.name}.{self.material.name}', materials=[self.material]))
+                UniversesIncluded[self.father.name].nest_universe(
+                    Universe(name=f'{self.father.name}.{self.material.name}',
+                             materials=[self.material]))
             except ExistingUniverse:
-                UniversesIncluded[self.father.name].add_universe(
+                UniversesIncluded[self.father.name].nest_universe(
                     Universe(name=f'{self.father.name}.{self.material.name}{sub_universe_number}',
                              materials=[self.material]))
         else:  # is the exception needed here as well?
-            UniversesIncluded[self.father.name].add_universe(Universe(name=f'{self.father.name}.{None}'))
+            UniversesIncluded[self.father.name].nest_universe(Universe(name=f'{self.father.name}.{None}'))
 
 
 @dataclass(slots=True)
 class LatticeRepresentation:
     """
-    Handles:
-    --------
     Handles the lattice representation.
+    
+    Attributes
+    ----------
+    rep: list[list[`SEAT.Universe`]]
+        the matrix representing the lattice. Each element is a `SEAT.Universe`
+        located where it should be in the lattice.
 
-    Methods:
-    --------
-    * `write()`: internal method to write on a file with proper formatting for Serpent 2 input lattice definition
-    * `copy()`: copies the object instance to another memory allocation
-    * `transpose()`: transposes the LatticeRepresentation instance modifying it
-    * `rotate()`: rotates the LatticeRepresentation instance modifying it
+    Properties
+    ----------
+    as_array :
+        the representation universes as `np.ndarray`.
+    flatten :
+        the represenattion universe as 1D `np.array`.
+
+    Methods
+    -------
+    write :
+        writes the `SEAT.Other` instance to a file.
+    copy :
+        copies the object instance to another memory allocation.
+    transpose :
+        transposes the LatticeRepresentation instance modifying it.
+    rotate :
+        rotates the LatticeRepresentation instance modifying it.
 
     Class Methods:
     --------------
-    * `from_cartesian()`: creates lattice from cartesian coordinate representation: se below for more
-    * `from_rows()`: creates the lattice representation from the rows of matrix in which each element is the same cell.
-    * `merge()`: creates the lattice representation by merging several representations.
+    from_cartesian :
+        creates lattice from cartesian coordinate representation.
+    from_rows : 
+        creates the lattice representation from matrix rows.
+    merge :
+        creates the lattice representation merging several representations.
 
-    Takes:
-    ------
-    * `rep`: 2D iterable - is the matrix representing the lattice. Each element is a Universe object instance
-        located where it should be in the lattice.
     """
     rep: list[list[Universe]]
 
@@ -361,21 +483,28 @@ class LatticeRepresentation:
                 .replace('\n ', '\n') + '\n').replace("'", '')
 
     @classmethod
-    def from_cartesian(cls, shape: tuple[int, int], filler: Universe, other: list[tuple[Universe, list[tuple]]] = None):
+    def from_cartesian(cls, shape: tuple[int, int], filler: Universe,
+                       other: list[tuple[Universe, list[tuple[int | str]]]]=[]):
         """
-        Creates the lattice representation from a filled matrix in which some specific elements are substituted.
+        Creates the lattice representation from a full matrix in which some
+        specific elements are substituted.
 
-        Takes:
-        ------
-        * `shape`: tuple - it represents the lattice shape in terms of lattice elements
-        * `filler`: Cell object instance - it is the universe filling the lattice or most of it
-        * `other`:  dictionary - it has Cell object instances as keys and a list of tuples containing the
-            coordinates of the corresponding universe in the lattice. Coordinates can be expressed as values
-            starting from 1 or strings containing one single letter
+        Parameters
+        ----------
+        shape : tuple[int]
+            represents the lattice shape in terms of lattice elements.
+        filler : `SEAT.Universe`
+            the universe filling the lattice or most of it.
+        other: list[tuple[`SEAT.Universe`, list[tuple[int | str]]]], optional
+            couples universes with a list of coordinate where those belong to
+            in the lattice. The coordinates can be expressed as values starting
+            from 1 or one-letter strings. The default is [].
 
-        Returns:
-        --------
-        * LatticeRepresentation object instance
+        Returns
+        -------
+        `SEAT.LatticeRepresentation`
+            the instance created by the classmethod.
+
         """
         out = np.array([filler] * np.prod(shape)).reshape(shape)
         if other is None:
@@ -397,16 +526,21 @@ class LatticeRepresentation:
     @classmethod
     def from_rows(cls, universes: list[Universe], length):
         """
-        Creates the lattice representation from the rows of matrix in which each element is the same universe.
+        Creates the lattice representation from the rows of matrix in which
+        each element is the same universe.
 
-        Takes:
-        ------
-        * `universes`: list - represents the lattice row by the cell present in that row.
-        * `length`: integer - length of each row in terms of number of cells.
+        Parameters
+        ----------
+        universes : list[`SEAT.Universe`]
+            the lattice row by the universes present in that row.
+        length : int
+            length of each row in terms of number of universes.
 
-        Returns:
-        --------
-        * LatticeRepresentation object instance
+        Returns
+        -------
+        `SEAT.LatticeRepresentation`
+            the instance created by the classmethod.
+
         """
         out = []
         for c in universes:
@@ -414,17 +548,20 @@ class LatticeRepresentation:
         return cls(out)
 
     @classmethod
-    def merge(cls, lst):
+    def merge(cls, lst: list):
         """
         Creates the lattice representation by merging several representations.
 
-        Takes:
-        ------
-        * `lst`: list - ordered list of the LatticeRepresentations to merge.
+        Parameters
+        ----------
+        lst : list[`SEAT.LatticeRepresentation`]
+            ordered list of the LatticeRepresentations to merge.
 
-        Returns:
-        --------
-        * LatticeRepresentation object instance
+        Returns
+        -------
+        `SEAT.LatticeRepresentation`
+            the instance created by the classmethod.
+
         """
         rep = lst[0].as_array if len(np.array(lst).shape) == 1 else lst[0]
         for lattice in lst[1:]:
@@ -433,11 +570,19 @@ class LatticeRepresentation:
 
     def write(self, file: str):
         """
-        Internal method to write on a file with proper formatting for Serpent 2 input lattice representation definition
+        Writes the `SEAT.LatticeRepresentation` instance to a file.
 
-        Takes:
-        ------
-        * `file`: string - is the name of the file where to write
+        Parameters
+        ----------
+        file : str
+            name of the file to write to.
+        mode : str, optional
+            mode to open the file. The default is 'a'.
+
+        Returns
+        -------
+        None.
+
         """
         with open(file, 'a') as f:
             f.write(self.__str__())
@@ -448,7 +593,9 @@ class LatticeRepresentation:
 
         Returns:
         --------
-        Returns a variable pointing to the new memory allocation
+        SEAT.Other
+            a copy of the `SEAT.LatticeRepresentation` instance.
+
         """
         return cp.deepcopy(self)
 
@@ -462,37 +609,68 @@ class LatticeRepresentation:
 @dataclass(slots=True)
 class Lattice(NestedUniverse):
     """
-    Handles:
-    --------
     Handles the lattice as a universe with specific geometrical arrangement.
+    Inhertis from `SEAT.NestedUniverse`.
 
-    Methods:
-    --------
-    * `write()`: internal method to write on a file with proper formatting for Serpent 2 input lattice definition
-    * `get_materials()`: returns a list with the materials in the Lattice.
+    Attributes
+    ----------
+    name : str | int
+        the identity of the Serpent 2 entity.
+    comment : `SEAT.Comment`, optional
+        the comment to the Serpent entity. The default is SEAT.Comment('').
+    inline_comment : `SEAT.InlineComment`, optional
+        the comment to be written on the same line as the Serpent 2 entity id.
+        The default is SEAT.Comment('').
+    materials : list[`SEAT.Material`], optional
+        the materials in the universe. The default is [].
+    daughters : list[Universe], optional
+        the universes nested in the universe.
+    parameters : list[float], optional
+        the input parameters required by the type expressed by `kind`. The
+        default is [].
+    representation : `SEAT.LatticeRepresentation`, optional
+        the lattice visual representation in terms of composing universes. The
+        default is None.
+    kind : int
+        the type of the lattice.
+        Allowed `kind` values are:
+            - 1: square lattice
+            - 2: x-hexagonal lattice
+            - 3: y-hexagonal lattice
+        The default value is 1.
 
-    Takes:
-    ------
-    * `parameters`: list - is a list with the input parameters required by the type expressed by `typ.
-        Default is `None`.
-    * `representation`: LatticeRepresentation object instance - is the lattice visual representation in therms of
-        composing universes.
-        Default is `None`.
-    * `typ`: integer - is the type of the lattice, default is `1`, can be:
-        * `1`: - square lattice
-        * `2`: - x-hexagonal lattice
-        * `3': - y-hexagonal lattice
+    Properties
+    ----------
+    sub_universes :
+        the universes composing the lattice.
 
-    Required inherited parameters:
-    ------------------------------
-    * `name`: string or integer - is the identity of the Serpent 2 universe
+    Methods
+    -------
+    assess :
+        prints the `SEAT.Lattice` python id.
+    write :
+        writes the `SEAT.Lattice` to a file.
+    get_materials :
+        lists with the materials in the universe.
+    nest_universe :
+        adds a Universe-like object to the nested universe.
+
     """
-    parameters: list = None
+    parameters: list[float] = field(default_factory=list)
     representation: LatticeRepresentation = None
-    typ: int = 1
+    kind: int = 1
 
     @property
-    def sub_universes(self):
+    def sub_universes(self) -> np.array:
+        """
+        the universes in the Lattice.
+
+        Returns
+        -------
+        `np.array`
+            the universes in the Lattice.
+
+        """
         return self.representation.flatten
 
     def __iter__(self):
@@ -500,16 +678,26 @@ class Lattice(NestedUniverse):
 
     def __str__(self):
         string = self.comment.__str__()
-        string += f"lat {self.name} {self.typ}"
+        string += f"lat {self.name} {self.kind}"
         for p in self.parameters:
             string += f" {p}"
         string += self.inline_comment.__str__()
         string += self.representation.__str__()
         return string
 
-    def get_materials(self) -> list:
+    def get_materials(self) -> list[Material]:
         """
-        Returns a list with the materials in the lattice, nested universe by nested universe.
+        Lists the materials in the Lattice.
+
+        Returns
+        -------
+        list[`SEAT.Material`]
+            the materials in the Lattice.
+
+        Note
+        ----
+        Called iteratively in the nested universes.
+
         """
         out = []
         for uni in self:
@@ -520,31 +708,33 @@ class Lattice(NestedUniverse):
 @dataclass(slots=True)
 class Geometry:
     """
-    Handles:
-    --------
-    Handles the geometry section of the Serpent 2 input file, composed of pins, surfaces, cells and lattice.
+    Handles the geometry section of the Serpent 2 input file, which composes of:
+        * pins
+        * surfaces
+        * cells
+        * lattice.
 
-    Methods:
-    --------
-    * `write()`: internal method to write on a file the handled items. They are written in the following order:
-        - pins
-        - surfaces
-        - cells
-        - lattice
-    * `copy()`: copies the object instance to another memory allocation
+    Attributes
+    ----------
+    pins : list[`SEAT.Pin`], optional
+        the pins in the geometry. The default is [].
+    surfaces : list[`SEAT.Surface`], optional
+        the surfaces in the geometry. The default is [].
+    cells : list[`SEAT.Cell`], optional
+        the cells in the geometry. The default is [].
+    lattices : list[`SEAT.Lattice`], optional
+        the lattices in the geometry. The default is [].
 
-    Takes:
-    --------
-    * `pins`: list - is a list containing the pins in the geometry
-    * `surfaces`: list - is a list containing the surfaces in the geometry
-    * `cells`: list - is a list containing the cells in the geometry
-    * `lattices`: list - is a list containing the lattices in the geometry
+    Methods
+    -------
+    write :
+        writes the `SEAT.Geometry` to a file.
+
     """
-
-    pins: list[Pin]
-    surfaces: list[Surface]
-    cells: list[Cell]
-    lattices: list[Lattice]
+    pins: list[Pin] = field(default_factory=list)
+    surfaces: list[Surface] = field(default_factory=list)
+    cells: list[Cell] = field(default_factory=list)
+    lattices: list[Lattice] = field(default_factory=list)
 
     def __str__(self):
         string = ''
@@ -563,15 +753,19 @@ class Geometry:
 
     def write(self, file):
         """
-        Internal method to write on a file the handled items. They are written in the following order:
-        - pins
-        - surfaces
-        - cells
-        - lattice
+        Writes the `SEAT.Geoemtry.__str__()` to a file.
 
-        Takes:
-        ------
-        * `file`: string - is the name of the file where to write
+        Parameters
+        ----------
+        file : str
+            the name of the file where to write.
+        mode : str, optional
+            mode to open the file. The default is 'a'.
+
+        Returns
+        -------
+        None.
+
         """
         with open(file, 'a') as f:
             f.write(self.__str__())
