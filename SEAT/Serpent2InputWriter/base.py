@@ -133,7 +133,7 @@ def unite(surfaces: list) -> list:
     return out
 
 
-def surface_complement(surfaces: list) -> list:
+def surface_complement(surfaces: list) -> list:    
     """
     Handles the surface surface complement operator ('-' in Serpent 2).
 
@@ -180,16 +180,15 @@ class Comment:
     Base class to handle the comments to the Serpent 2 input.
 
     Args:
-    ------
-    txt: str
+    -----
+    txt : str
         the text of the comment.
 
     Methods:
     --------
-    write:
-        Writes the `SEAT.Comment` instance to a file according to the Serpent 2
-        syntax ('/* {comment} */').
-    copy:
+    write :
+        Writes the `SEAT.Comment` instance to a file.
+    copy :
         Copies the object instance to another memory allocation.
 
     """
@@ -242,7 +241,7 @@ class StandaloneComment(Comment):
 
     Args:
     -----
-    txt: str
+    txt : str
         the text of the comment.
 
     """
@@ -258,7 +257,7 @@ class InlineComment(Comment):
 
     Args:
     -----
-    txt: str
+    txt : str
         the text of the comment.
 
     """
@@ -273,19 +272,19 @@ class Entity:
     Base class to handle the comments to the Serpent 2 input. Provides them
     with an identity and comments.
 
-    Args:
-    ------
-    name: str or int
+    Args :
+    -----
+    name : str or int
         the identity of the Serpent 2 entity.
-    comment: SAET.Comment, optional
+    comment : SAET.Comment, optional
         the comment to the Serpent entity. The default is SEAT.Comment('').
-    inline_comment: SEAT.InlineComment, optional
+    inline_comment : SEAT.InlineComment, optional
         the comment to be written on the same line as the Serpent 2 entity id.
         The default is SEAT.Comment('').
 
     Methods:
     --------
-    assess:
+    assess :
         prints the `SEAT.Entity` python id.
     """
     name: str | int
@@ -305,7 +304,6 @@ class Entity:
         None.
 
         """
-        
         print(id(self))
 
 
@@ -315,15 +313,15 @@ class Other:
     Object for not-yet-implemented Serpent 2 cards and entities.
 
     Args:
-    ------
-    string: str
+    -----
+    string : str
         the Serpent 2 properly formatted string for the desired implementation.
 
     Methods:
     --------
-    write:
+    write :
         Writes the `SEAT.Other` instance to a file.
-    copy:
+    copy :
         Copies the object instance to another memory allocation.
 
     """

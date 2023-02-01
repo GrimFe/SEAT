@@ -16,15 +16,15 @@ class Normalization:
     Class for the flux normalization.
 
     Args:
-    ------
-    value: float
+    -----
+    value : float
         the power density (kW/g), the power (W) or anything needed for flux
         normalization.
-    material: SEAT.Material
+    material : SEAT.Material
         the `SEAT.Material` instance in which the power is normalized.
         If `material == ''` then the normalization will be referred to the
         average power produced in the system.
-    kind: str
+    kind : str
         the type of normalization imposed. The default is 'powdens'.
         Allowed `kind` values are:
             - 'powdens': normalization to power density
@@ -39,9 +39,9 @@ class Normalization:
 
     Methods:
     --------
-    write:
+    write :
         Writes the `SEAT.Normalization` instance to a file.
-    copy:
+    copy :
         Copies the object instance to another memory allocation.
 
     """
@@ -91,12 +91,12 @@ class Interval:
     Class for the normalization interval.
 
     Args:
-    ------
-    span: float
+    -----
+    span : float
         the duration of the interval.
-    total: bool
+    total : bool
         identifyes whether the step is integral. The default is False.
-    kind: str
+    kind : str
         the type of interval chosen, which also defines the `span` units.
         The default is 'day'.
         Allowed `kind` values are:
@@ -107,9 +107,9 @@ class Interval:
 
     Methods:
     --------
-    write:
+    write :
         Writes the `SEAT.Interval` instance to a file.
-    copy:
+    copy :
         Copies the object instance to another memory allocation.
 
     """
@@ -173,13 +173,13 @@ class Depletion:
     Class for the depletion, coupling `SEAT.Normalization` and `SEAT.Interval`.
 
     Args:
-    ------
-    steps: list[tuple]
+    -----
+    steps : list[tuple]
         Couples a `SEAT.Normalization` instance and a `SEAT.Interval` instance.
 
     Methods:
     --------
-    write:
+    write :
         Writes the `SEAT.Interval` instance to a file.
 
     """
