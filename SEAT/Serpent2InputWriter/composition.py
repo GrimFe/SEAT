@@ -25,30 +25,54 @@ class MaterialComposition:
     """
     Handles the nuclide composition of the materials in the simulation.
 
+    Args:
+    -----
+    components : dict[str, float]
+        * key: nuclide symbol (`'Nn###'`)
+        * value: densities as positive floats.
+    atomic : bool
+        makes the material densities be interpreted as atomic or mass.
+    _already_za : bool
+        set to true when `components.keys()` was made of ZAs.
+
     Methods:
     --------
-    * `to_file()`: writes to a file the components in the material composition
+    write :
+        writes the `SEAT.MaterialComposition` instance to a file.
+    adjust :
+        adjusts the material composition to a nuclear data library.
 
     Class methods:
     --------------
-    * `parse()`: reads the material composition from a file
-    * `from_file()`: reads the material composition from a file
-    * `from_zam()`: creates the material composition form a dictionary of ZAMs and fractions
-    * `from_sep_nuclides()`: creates the material composition form a dictionary of nuclides (`Nn{sep}###`) and fractions
-    * `write()`: internal method to write on a file with proper formatting for Serpent 2 input material composition
-    * `from_output_file()`: creates the material composition from a Serpent2 output file - not implemented yet
-    * `enriched()`: creates the material composition from an enriching criterion
-    * `enriched_natural()`: creates the material composition from an enriching criterion and the natural abundance of an element
-    * `polluted()`: creates the material composition from a polluting criterion
-    * `polluted_natural()`: creates the material composition from a polluting criterion and the natural abundance of an element
-    * `natural()`: creates the material composition form natural abundances
-    * `composite()`: creates the material composition form natural abundances of several elements
+    parse :
+        reads the material composition from a string.
+    _from_list :
+        reads the material composition from a list of strings.
+    from_file :
+        reads the material composition from a file.
+    from_output_file :
+        readsthe material composition from a Serpent2 output file - not implemented yet.
+    enriched_custom :
+        enriches a custom material composition.
+    enriched :
+        enriches a predefined material.
+    polluted_custom :
+        creates the material composition from a pollution criterion.
+    polluted :
+        creates the material composition polluting a natural element or one form `SEAT.composites`.
+    natural :
+        creates the material composition form natural abundances.
+    predefined :
+        creates the material composition form those predefined in `SEAT.composites`.
+    composite :
+        creates the material composition form elements.
+    from_zam :
+        creates the material composition giving the `components.keys()` as ZAMs.
+    from_za :
+        creates the material composition giving the `components.keys()` as ZAs.
+    from_sep_nuclides :
+        creates the material composition giving the `components.keys()` as (`Nn{sep}###`).
 
-    Takes:
-    ------
-    * `components`: dict - has the nuclides as keys (`'Nn###'`) and the densities (as positive floats) as values.
-    * `atomic`: bool - flag to interpret the material densities as atomic (`True`) or mass (`False`).
-                        Default is `True`.
     """
     components: dict[str, float]
     atomic: bool
@@ -65,34 +89,128 @@ class MaterialComposition:
         return string
 
     @classmethod
-    def parse(cls, string: str, separator=None, *args, **kwargs):
-        return cls._from_list(string.split('\n'), separator, *args, **kwargs)
+    def parse(cls, string: str, separator: str=None, **kwargs):
+        """
+        Reads the material composition from a string.
+
+        Parameters
+        ----------
+        string : str
+            the string to parse.
+        separator : str, optional
+            the separator of the nuclide symbol and the corresponding density.
+            The default is None.
+        **kwargs :
+            - atomic : bool
+                makes the material densities be interpreted as atomic or mass.
+
+        Returns
+        -------
+        SEAT.MaterialComposition
+            the instance created by he classmethod.
+
+        Note
+        ----
+        The nuclides in `string` should either be in the form 'Nn###', or ZAM.
+
+        """
+        return cls._from_list(string.split('\n'), separator, **kwargs)
 
     @classmethod
-    def _from_list(cls, lines: list, separator=None, *args, **kwargs):
+    def _from_list(cls, lines: list[str], separator: str=None, **kwargs):
+        """
+        Reads the material composition from a list of strings.
+
+        Parameters
+        ----------
+        lines : list[str]
+            the list of strings with the composition and the density.
+        separator : , optional
+            the separator of the nuclide symbol and the corresponding density.
+            The default is None.
+        **kwargs :
+            - atomic : bool
+                makes the material densities be interpreted as atomic or mass.
+
+        Returns
+        -------
+        SEAT.MaterialComposition
+            the instance created by he classmethod.
+
+        Note
+        ----
+        The nuclides in `lines` should either be in the form 'Nn###', or ZAM.
+
+        """
         components = {}
         for line in lines:
             line = [line_.strip() for line_ in line.split(separator)]
             nuclide = line[0] if not line[0].isnumeric() else zam2nuclide(int(line[0]))
             components[nuclide] = float(line[1])
-        return cls(components, *args, **kwargs)
+        return cls(components, **kwargs)
 
     @classmethod
-    def from_file(cls, file: str, separator=None, *args, **kwargs):
+    def from_file(cls, file: str, separator: str=None, **kwargs):
         """
-        Creates material components from a file
+        Reads the material composition from a file.
 
-        Takes:
+        Parameters:
         ------
-        * `file`: string - name of the file from which the material composition should be read.
-                            The nuclides in the file should either be in the form 'Nn###', or ZAM.
+        file : str
+            name of the file from which the material composition should be read.
+        separator: str
+            the separator of the nuclide symbol and the corresponding density.
+            The default is None.
+        **kwargs :
+            - atomic : bool
+                makes the material densities be interpreted as atomic or mass.
+
+        Returns
+        -------
+        SEAT.MaterialComposition
+            the instance created by he classmethod.
+
+        Note
+        ----
+        The nuclides in the file should either be in the form 'Nn###', or ZAM.
+
         """
         with open(file, 'r') as f:
             lines = f.readlines()
-        return cls._from_list(lines, separator, *args,  **kwargs)
+        return cls._from_list(lines, separator, **kwargs)
 
     @classmethod
-    def enriched_custom(cls, abundance: dict[str, float], enrichers: dict[str, float], *args, **kwargs):
+    def enriched_custom(cls, abundance: dict[str, float], enrichers: dict[str, float], **kwargs):
+        """
+        Creates the material composition from a custom abundance and an
+        enrichment criterion.
+
+        Parameters
+        ----------
+        abundance : dict[str, float]
+            * key: the symbol of the nuclides (`'Nn###'`) or elements (`''Nn`)
+                    in the reference material.
+            * value: the abundance of each nuclide or element.
+        enrichers : dict[str, float]
+            * key: the symbol (`'Nn###'`) of the nuclides enriching the material.
+            * value: the target isotopic abundance of the enriching nuclides.
+        **kwargs :
+            - atomic : bool
+                makes the material densities be interpreted as atomic or mass.
+
+        Raises
+        ------
+        Exception
+            `abundance.keys()` should either contain elements or nuclides.
+        Exception
+            `enrichers.keys()` should contain nuclides.
+
+        Returns
+        -------
+        SEAT.MaterialComposition
+            the instance created by he classmethod.
+
+        """
         if are_elements(set(abundance.keys())):
             abundance_ = unfold_composite(abundance)
         elif are_nuclides(set(abundance.keys())):
@@ -103,19 +221,77 @@ class MaterialComposition:
             enrichers_ = enrichers
         else:
             raise Exception("The keys of the enrichers should be nuclides.")
-        return cls(enrich(abundance_, enrichers_), *args, **kwargs)
+        return cls(enrich(abundance_, enrichers_), **kwargs)
 
     @classmethod
-    def enriched(cls, base: str, *args, **kwargs):
+    def enriched(cls, base: str, **kwargs):
+        """
+        Enriches a natural material or a `SEAT.composites` item according to an
+        enriching criterion.
+
+        Parameters
+        ----------
+        base : str
+            the element symbol or `SEAT.composites` symbol of the material to
+            enrich.
+        **kwargs :
+            - atomic : bool
+                makes the material densities be interpreted as atomic or mass.
+            - enrichers : dict[str, float]
+                * key: the symbol (`'Nn###'`) of the nuclides enriching the
+                        material.
+                * value: the target abundance of the enriching nuclides.
+
+        Raises
+        ------
+        Exception
+            `base` should either be in `SEAT.natural` or in `SEAT.composites`.
+
+        Returns
+        -------
+        SEAT.MaterialComposition
+            the instance created by he classmethod.
+
+        """
         if base in dir(SEAT.natural):
-            return cls.enriched_custom(getattr(SEAT.natural, base), *args, atomic=True, **kwargs)
+            return cls.enriched_custom(getattr(SEAT.natural, base), atomic=True, **kwargs)
         elif base in dir(SEAT.composites):
-            return cls.enriched_custom(getattr(SEAT.composites, base), *args, atomic=True, **kwargs)
+            return cls.enriched_custom(getattr(SEAT.composites, base), atomic=True, **kwargs)
         else:
             raise Exception(f"{base} not found in the SEAT database.")
 
     @classmethod
-    def polluted_custom(cls, abundance: dict[str, float], pollutants: dict[str, float], *args, **kwargs):
+    def polluted_custom(cls, abundance: dict[str, float], pollutants: dict[str, float], **kwargs):
+        """
+        Creates the material composition from a custom abundance and a pollution
+        criterion.
+
+        Parameters
+        ----------
+        abundance : dict[str, float]
+            * key: the symbol of the nuclides (`'Nn###'`) or elements (`''Nn`)
+                    in the reference material.
+            * value: the abundance of each nuclide or element.
+        pollutants : dict[str, float]
+            * key: the symbol (`'Nn###'`) of the nuclides pollutant.
+            * value: the target isotopic abundance of the polluting nuclides.
+        **kwargs :
+            - atomic : bool
+                makes the material densities be interpreted as atomic or mass.
+
+        Raises
+        ------
+        Exception
+            `abundance.keys()` should either contain elements or nuclides.
+        Exception
+            `enrichers.keys()` should contain nuclides.
+
+        Returns
+        -------
+        SEAT.MaterialComposition
+            the instance created by he classmethod.
+
+        """
         if are_elements(set(abundance.keys())):
             abundance_ = unfold_composite(abundance)
         elif are_nuclides(set(abundance.keys())):
@@ -128,69 +304,185 @@ class MaterialComposition:
             pollutants_ = unfold_composite(pollutants)
         else:
             raise Exception("The keys of the pollutants should be nuclides.")
-        return cls(pollute(abundance_, pollutants_), *args, **kwargs)
+        return cls(pollute(abundance_, pollutants_), **kwargs)
 
     @classmethod
-    def polluted(cls, base: str, *args, **kwargs):
+    def polluted(cls, base: str, **kwargs):
+        """
+        Pollutes a natural material or a `SEAT.composites` item according to a
+        pollution criterion.
+
+        Parameters
+        ----------
+        base : str
+            the element symbol or `SEAT.composites` symbol of the material to
+            pollute.
+        **kwargs :
+            - atomic : bool
+                makes the material densities be interpreted as atomic or mass.
+            - pollutants : dict[str, float]
+                * key: the symbol (`'Nn###'`) of the nuclides pollutant.
+                * value: the target isotopic abundance of the polluting nuclides.
+
+        Raises
+        ------
+        Exception
+            `base` should either be in `SEAT.natural` or in `SEAT.composites`.
+
+        Returns
+        -------
+        SEAT.MaterialComposition
+            the instance created by he classmethod.
+
+        """
         if base in dir(SEAT.natural):
-            return cls.polluted_custom(getattr(SEAT.natural, base), *args, atomic=True, **kwargs)
+            return cls.polluted_custom(getattr(SEAT.natural, base), atomic=True, **kwargs)
         elif base in dir(SEAT.composites):
-            return cls.polluted_custom(getattr(SEAT.composites, base), *args, atomic=True, **kwargs)
+            return cls.polluted_custom(getattr(SEAT.composites, base), atomic=True, **kwargs)
         else:
             raise Exception(f"{base} not found in the SEAT database.")
 
     @classmethod
-    def natural(cls, element: str, *args, **kwargs):
-        return cls(getattr(SEAT.natural, element), *args, atomic=True, **kwargs)
-
-    @classmethod
-    def predefined(cls, composite: str, *args, **kwargs):
-        return cls.composite(getattr(SEAT.composites, composite), *args, atomic=True, **kwargs)
-
-    @classmethod
-    def composite(cls, elements: dict[str, float], *args, **kwargs):
-        return cls(unfold_composite(elements), *args, **kwargs)
-
-    @classmethod
-    def from_zam(cls, zam: dict[int, float], *args, **kwargs):
+    def natural(cls, element: str, **kwargs):
         """
-        Creates material composition from a dictionary
+        Creates the material composition form natural abundances.
 
-        Takes:
-        ------
-        * `zam` is a dictionary having the ZAM number as keys and the fraction (as positive floats) as values
+        Parameters
+        ----------
+        element : str
+            the element symbol of the material in the material compostition.
+        **kwargs :
+            - atomic : bool
+                makes the material densities be interpreted as atomic or mass.
+
+        Returns
+        -------
+        SEAT.MaterialComposition
+            the instance created by he classmethod.
+
+        """
+        return cls(getattr(SEAT.natural, element), atomic=True, **kwargs)
+
+    @classmethod
+    def predefined(cls, composite: str, **kwargs):
+        """
+        Creates the material composition form those predefined in `SEAT.composites`.
+
+        Parameters
+        ----------
+        composite : str
+            the composite symbol of the material in the material composition.
+        **kwargs :
+            - atomic : bool
+                makes the material densities be interpreted as atomic or mass.
+
+        Returns
+        -------
+        SEAT.MaterialComposition
+            the instance created by he classmethod.
+
+        """
+        
+        return cls.composite(getattr(SEAT.composites, composite), atomic=True, **kwargs)
+
+    @classmethod
+    def composite(cls, elements: dict[str, float], **kwargs):
+        """
+        Creates the material composition form elements.
+
+        Parameters
+        ----------
+        elements : dict[str, float]
+            * key: the element symbol.
+            * value: the share of that element in the target composite.
+        **kwargs :
+            - atomic : bool
+                makes the material densities be interpreted as atomic or mass.
+
+        Returns
+        -------
+        SEAT.MaterialComposition
+            the instance created by he classmethod.
+
+        """
+        return cls(unfold_composite(elements), **kwargs)
+
+    @classmethod
+    def from_zam(cls, zam: dict[int, float], **kwargs):
+        """
+        Creates material composition from a dictionary of ZAMs.
+
+        Parameters
+        ----------
+        zam : dict[int, float]
+            * key: the ZAM number of the nuclides.
+            * value: the corresponding fraction (as positive floats) as values.
+        **kwargs :
+            - atomic : bool
+                makes the material densities be interpreted as atomic or mass.
+
+        Returns
+        -------
+        SEAT.MaterialComposition
+            the instance created by he classmethod.
+
         """
         components = dict(zip([zam2nuclide(z) for z in zam.keys()], zam.values()))
-        return cls(components, *args, **kwargs)
+        return cls(components, **kwargs)
 
     @classmethod
-    def from_za(cls, za: dict[int, float], *args, **kwargs):
+    def from_za(cls, za: dict[int, float], **kwargs):
         """
-        Creates material composition from a dictionary
+        Creates material composition from a dictionary of ZAs.
 
-        Takes:
-        ------
-        * `za` is a dictionary having the ZA number as keys and the fraction (as positive floats) as values
+        Parameters
+        ----------
+        za : dict[int, float]
+            * key: the ZA number of the nuclides.
+            * value: the corresponding fraction (as positive floats) as values.
+        **kwargs :
+            - atomic : bool
+                makes the material densities be interpreted as atomic or mass.
+
+        Returns
+        -------
+        SEAT.MaterialComposition
+            the instance created by he classmethod.
+
         """
-        instance = cls(za, *args, **kwargs)
+        instance = cls(za, **kwargs)
         instance._already_za = True
         return instance
 
     @classmethod
-    def from_sep_nuclides(cls, nuclides: dict[str, float], sep='', *args, **kwargs):
+    def from_sep_nuclides(cls, nuclides: dict[str, float], sep: str='', **kwargs):
         """
-        Creates material composition from a dictionary
+        Creates the material composition giving the `components.keys()` as (`Nn{sep}###`).
 
-        Takes:
-        ------
-        * `nuclides`: dictionary - has the nuclides as keys (`'Nn{sep}###'`) and the composition (as positive floats) as values.
+        Parameters
+        ----------
+        nuclides : dict[int, float]
+            * key: the nuclide symbols (`'Nn{sep}###'`).
+            * value: the corresponding fraction (as positive floats) as values.
+        sep: str
+            the nuclide separator.
+        **kwargs :
+            - atomic : bool
+                makes the material densities be interpreted as atomic or mass.
+
+        Returns
+        -------
+        SEAT.MaterialComposition
+            the instance created by he classmethod.
+
         """
         components = dict(zip([n.replace(sep, '') for n in nuclides.keys()], nuclides.values()))
-        return cls(components, *args, **kwargs)
+        return cls(components, **kwargs)
 
     @classmethod
     def from_output_file(cls, file: str):  # interaction with serpentTools missing
         """
+        TO BE IMPLEMENTED
         Creates material composition from a Serpent 2 output file
 
         Takes:
@@ -199,27 +491,37 @@ class MaterialComposition:
         """
         pass
 
-    def to_file(self, file: str):
+    def write(self, file: str, mode: str='w'):
         """
-        Writes the material composition to a file.
+        Writes the `SEAT.MaterialComposition` instance to a file.
 
-        Takes:
-        ------
-        * `file`: string - is the name of the file in which the material components should be witter
+        Parameters
+        ----------
+        file : str
+            name of the file to write to.
+        mode : str, optional
+            mode to open the file. The default is 'w'.
+
+        Returns
+        -------
+        None.
+
         """
-        with open(file, 'w') as f:
+        with open(file, mode=mode) as f:
             f.write(self.__str__())
 
-    def adjust(self, library: str, verbose=True):
+    def adjust(self, library: str, verbose: bool=True):
         """
-        Adjust the components of the MaterialComposition redistributing the
+        Adjusts the components of the MaterialComposition redistributing the
         nuclides which cross section data are not evaluated in a library to the
         other isotopes of the same element, according to their natural abundance.
 
         Parameters
         ----------
         library : str
-            The library of which the available cross section set should be got.
+            the library of which the available cross section set should be got.
+        verbose: bool, optional
+            prints the excluded nuclides. The default is False.
 
         Returns
         -------
@@ -238,7 +540,9 @@ class MaterialComposition:
 
         Returns:
         --------
-        Returns an object instance pointing to the new memory allocation
+        SEAT.Other
+            a copy of the `SEAT.MaterialComposition` instance.
+
         """
         return cp.deepcopy(self)
 
@@ -246,23 +550,59 @@ class MaterialComposition:
 @dataclass(slots=True)
 class MaterialRepresentation(MaterialComposition):
     """
-    Handles the material representation coupling its components to the library identifier and the temperature at which
-    nuclear data should be generated.
+    Handles the material representation coupling its components to the library
+    identifier and the temperature at which nuclear data should be generated.
+    Inherits from `SEAT.MaterialComposition`.
+
+    Args:
+    ------
+    tmp : float
+        the temperature at which nuclear data should be generated [K].
+    data_type : str, optional
+        the library identifier. The default is 'c' for cross sections.
 
     Methods:
     --------
-    * `write()`: internal method to write on a file with proper formatting for Serpent 2 input material composition
+    get_temperature : 
+        formats the temperature according to Serpent 2 syntax.
+    get_nuclide_representation :
+        formats the nuclides in the composition as: {ZA}.{`tmp`}{`data_type`}.
+    get_values :
+        gets the density of the nuclides in the `SEAT.MaterialRepresentation`.
+    write:
+        writes the `SEAT.MaterialRepresentation` instance to a file.
 
     Class methods:
     --------------
-    * `from_string()`: creates material representation from a string where no information on the string nor on the
-        library is included
-    * `from_material_composition()`: creates material composition from a `MaterialComposition` object instance
+    parse :
+        reads the material composition from a string.
+    _from_list :
+        reads the material composition from a list of strings.
+    from_file :
+        reads the material composition from a file.
+    from_output_file :
+        readsthe material composition from a Serpent2 output file - not implemented yet.
+    enriched_custom :
+        enriches a custom material composition.
+    enriched :
+        enriches a predefined material.
+    polluted_custom :
+        creates the material composition from a pollution criterion.
+    polluted :
+        creates the material composition polluting a natural element or one form `SEAT.composites`.
+    natural :
+        creates the material composition form natural abundances.
+    predefined :
+        creates the material composition form those predefined in `SEAT.composites`.
+    composite :
+        creates the material composition form elements.
+    from_zam :
+        creates the material composition giving the `components.keys()` as ZAMs.
+    from_za :
+        creates the material composition giving the `components.keys()` as ZAs.
+    from_sep_nuclides :
+        creates the material composition giving the `components.keys()` as (`Nn{sep}###`).
 
-    Takes:
-    ------
-    * `tmp`: float - is the temperature at which nuclear data should be generated [K]
-    * `data_type`: string - is the library identifier. Default is `'c'` for cross sections
     """
     tmp: float
     data_type: str = 'c'
@@ -274,16 +614,33 @@ class MaterialRepresentation(MaterialComposition):
         return string
 
     def get_temperature(self) -> str:
+        """
+        Gets the temperature of the `SEAT.MaterialRepresentation` formatted as
+        in the Serpent 2 input file.
+
+        Returns
+        -------
+        str
+            the formatted temperature.
+
+        """
+        
         if self.tmp < 1000:
             tmp_ = '0' + '{:.0f}'.format(self.tmp / 100)
         else:
             tmp_ = '{:.0f}'.format(self.tmp / 100)
         return tmp_
 
-    def get_nuclide_representation(self) -> list:
+    def get_nuclide_representation(self) -> list[str]:
         """
-        Computes the representation of each nuclide in the composition as:
-            {ZA}.{temperature}{data_type}
+        Gets the representation of each nuclide in the composition as:
+            {ZA}.{temperature}{data_type}.
+
+        Returns
+        -------
+        list[str]
+            with formatted nuclides as elements.
+
         """
         temperature, data_type = self.get_temperature(), self.data_type
         out = [f"{k}.{temperature}{data_type}" for k in self.components.keys()
@@ -292,18 +649,35 @@ class MaterialRepresentation(MaterialComposition):
                    for k in self.components.keys()]
         return out
 
-    def get_values(self):
+    def get_values(self) -> list[float]:
+        """
+        Gets the density of the nuclides in the `SEAT.MaterialRepresentation`.
+
+        Returns
+        -------
+        list[float]
+            with the densities as items.
+
+        """
         return [v for v in self.components.values()]
 
-    def write(self, file):
+    def write(self, file, mode: str='a'):
         """
-        Internal method to write on a file with proper formatting for Serpent 2 input material definition
+        Writes the `SEAT.MaterialRepresentation` instance to a file.
 
-        Takes:
-        ------
-        * `file`: string - is the name of the file where to write
+        Parameters
+        ----------
+        file : str
+            name of the file to write to.
+        mode : str, optional
+            mode to open the file. The default is 'a'.
+
+        Returns
+        -------
+        None.
+
         """
-        with open(file, 'a') as f:
+        with open(file, mode=mode) as f:
             f.write(self.__str__())
 
 
@@ -405,7 +779,7 @@ class Material(Entity):
         return string
 
     @classmethod
-    def mix(cls, name: str, materials: list[tuple], *args, **kwargs) -> object:
+    def mix(cls, name: str, materials: list[tuple], **kwargs) -> object:
         """
         Creates material mixing other materials
 
@@ -417,7 +791,7 @@ class Material(Entity):
         a = []
         for k, v in materials:
             a.append(f"{k.name} {v}\n")
-        return cls(name=name, _mixture=''.join(a), *args, **kwargs)
+        return cls(name=name, _mixture=''.join(a), **kwargs)
 
     def get_temperature(self) -> str:
         multiple = False
