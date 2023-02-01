@@ -449,18 +449,7 @@ class Material(Entity):
             kind = 'tft'
         # if double:
         #     raise Exception(f'More than one temperature type was given to Material {self.name}')
-        return kind
-
-    def write(self, file: str):
-        """
-        Internal method to write on a file with proper formatting for Serpent 2 input material definition
-
-        Takes:
-        ------
-        * `file`: string - is the name of the file where to write
-        """
-        with open(file, 'a') as f:
-            f.write(self.__str__())
+        return kind 
 
     def divide(self, lvl: int, kind: str, sub: tuple):
         """
