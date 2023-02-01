@@ -25,24 +25,24 @@ class MaterialComposition:
     """
     Handles the nuclide composition of the materials in the simulation.
 
-    Args:
-    -----
+    Attributes
+    ----------
     components : dict[str, float]
         * key: nuclide symbol (`'Nn###'`)
         * value: densities as positive floats.
     atomic : bool
         makes the nuclide densities be interpreted as atomic or mass.
     _already_za : bool
-        set to true when `components.keys()` was made of ZAs.
+        set to True when `components.keys()` was made of ZAs.
 
-    Methods:
+    Methods
     --------
     write :
         writes the `SEAT.MaterialComposition` instance to a file.
     adjust :
         adjusts the material composition to a nuclear data library.
 
-    Class methods:
+    Class methods
     --------------
     parse :
         reads the material composition from a string.
@@ -59,7 +59,7 @@ class MaterialComposition:
     polluted_custom :
         creates the material composition from a pollution criterion.
     polluted :
-        creates the material composition polluting a natural element or one form `SEAT.composites`.
+        creates the material composition polluting a natural element or one from `SEAT.composites`.
     natural :
         creates the material composition form natural abundances.
     predefined :
@@ -154,8 +154,8 @@ class MaterialComposition:
         """
         Reads the material composition from a file.
 
-        Parameters:
-        ------
+        Parameters
+        ----------
         file : str
             name of the file from which the material composition should be read.
         separator: str
@@ -250,7 +250,7 @@ class MaterialComposition:
         Returns
         -------
         SEAT.MaterialComposition
-            the instance created by he classmethod.
+            the instance created by the classmethod.
 
         """
         if base in dir(SEAT.natural):
@@ -521,11 +521,11 @@ class MaterialComposition:
         library : str
             the library of which the available cross section set should be got.
         verbose: bool, optional
-            prints the excluded nuclides. The default is False.
+            prints the excluded nuclides. The default is True.
 
         Returns
         -------
-        None
+        None.
 
         """
         available = get_existing_xs(library)
@@ -554,8 +554,8 @@ class MaterialRepresentation(MaterialComposition):
     identifier and the temperature at which nuclear data should be generated.
     Inherits from `SEAT.MaterialComposition`.
 
-    Args:
-    ------
+    Attributes
+    ----------
     tmp : float
         the temperature at which nuclear data should be generated [K].
     data_type : str, optional
@@ -687,8 +687,8 @@ class Material(Entity):
     Handles the material definition and the operations on single materials.
     Inherits from `SEAT.Entity`.
 
-    Args :
-    -----
+    Attributes
+    ----------
     name : str or int
         the identity of the Serpent 2 entity.
     comment : SAET.Comment, optional
@@ -724,15 +724,15 @@ class Material(Entity):
         Better use of material divisions is handled by the `divide()` method.
     fix : dict[str, float], optional
         the library information for decay nuclides (i.e. without cross-section data).
-        * keys: library id.
-        * value: temperature [K].
+        * key: library id.
+        * valu: temperature [K].
         Only one key-value pair is allowed. The default is None.
     moder : dict[str, int], optional
         moderators and corresponding thermal scattering library (tsl).
-        * keys: names of the thermal scattering data libraries defined using
-                the therm card.
-        * values: ZA number of the thermal scatter (1001 for H1).
-        The default is None.
+        * key: name of the thermal scattering data library defined using the
+                therm card.
+        * value: ZA number of the thermal scatter (1001 for H1). The default is
+                None.
     _mixture : str, optional
         the mixed materials and their fractions. The efault is None.
     _divisions: list[`SEAT.Division`], optional
@@ -801,8 +801,8 @@ class Material(Entity):
         """
         Creates material mixing other materials.
 
-        Args:
-        -----
+        Parameters
+        ----------
         name : str | int
             the identity of the Serpent 2 entity.
         materials : list[tuples[`SEAT.Material`, flaot]]
@@ -890,12 +890,12 @@ class Material(Entity):
             raise Exception(string + f' was given to Material {self.name}')
         return kind
 
-    def divide(self, lvl: int, kind: str, sub: tuple[float]):
+    def divide(self, lvl: int, kind: str, sub: tuple[int | float]):
         """
         Method to create material divisions and compute sub-volumes.
 
-        Args:
-        -----
+        Parameters
+        ----------
         lvl : int
             indicates the cell level of the division.
             (0: no division, 1: last level division, 2: second last level division, ...)
@@ -907,7 +907,7 @@ class Material(Entity):
                 - 'z_cartesian'
                 - 'radial'
                 - 'sectorial'
-        sub : tuple
+        sub : tuple[int | float]
             data for the division (lengths in [cm]).
             It can be composed as follows:
                 - for cartesian and radial division:
@@ -923,8 +923,9 @@ class Material(Entity):
 
         Notes:
         ------
-        mvol calculation not implemented for cartesian and sectorial division yet
-        Only 2D subdivision is implemented
+        Division volume calculation not implemented for cartesian and sectorial
+        division yet.
+        Only 2D subdivision is implemented.
 
         """
         self._division_string = f"div {self.name} sep {lvl} sub{kind[0]} " + reformat(str(sub), "(),")
@@ -1042,16 +1043,14 @@ class Composition:
         to. The default is None.
     from_restart : str
         the name of the binary restart file the composition should be read
-        from. The default is `None`.
+        from. The default is None.
 
     Methods:
     --------
-    * `write()`: internal method to write on a file the handled items. They are written in the following order:
-        - material
-        - libraries
-        - thermal scattering data
-        - restart files
-    * `get_subdivisions()`: gets the subdivisions of the materials in the composition
+    write :
+        writes the `SEAT.composition` to a file.
+    get_subdivisions :
+        lists the subdivisions of the materials in the composition.
 
     
     """
@@ -1104,7 +1103,7 @@ class Composition:
 
     def get_subdivisions(self) -> list[Division]:
         """
-        Gets a list of all the subdivisions in the `SEAT.Composition`.
+        Lists of all the subdivisions in the `SEAT.Composition`.
 
         Returns:
         --------

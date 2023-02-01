@@ -15,8 +15,8 @@ class Normalization:
     """
     Class for the flux normalization.
 
-    Args:
-    -----
+    Attributes
+    ----------
     value : float
         the power density (kW/g), the power (W) or anything needed for flux
         normalization.
@@ -40,9 +40,9 @@ class Normalization:
     Methods:
     --------
     write :
-        Writes the `SEAT.Normalization` instance to a file.
+        writes the `SEAT.Normalization` instance to a file.
     copy :
-        Copies the object instance to another memory allocation.
+        copies the object instance to another memory allocation.
 
     """
     value: float
@@ -90,8 +90,8 @@ class Interval:
     """
     Class for the normalization interval.
 
-    Args:
-    -----
+    Attributes
+    ----------
     span : float
         the duration of the interval.
     total : bool
@@ -108,9 +108,9 @@ class Interval:
     Methods:
     --------
     write :
-        Writes the `SEAT.Interval` instance to a file.
+        writes the `SEAT.Interval` instance to a file.
     copy :
-        Copies the object instance to another memory allocation.
+        copies the object instance to another memory allocation.
 
     """
     span: float
@@ -172,15 +172,15 @@ class Depletion:
     """
     Class for the depletion, coupling `SEAT.Normalization` and `SEAT.Interval`.
 
-    Args:
-    -----
+    Attributes
+    ----------
     steps : list[tuple]
-        Couples a `SEAT.Normalization` instance and a `SEAT.Interval` instance.
+        couples a `SEAT.Normalization` instance and a `SEAT.Interval` instance.
 
     Methods:
     --------
     write :
-        Writes the `SEAT.Interval` instance to a file.
+        writes the `SEAT.Interval` instance to a file.
 
     """
     steps: list[tuple]

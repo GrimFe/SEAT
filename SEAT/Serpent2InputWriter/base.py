@@ -22,14 +22,14 @@ def reformat(string: str, reform: str) -> str:
     Parameters
     ----------
     string : str
-        The string to remove characters from.
+        the string to remove characters from.
     reform : str
-        The string of the characters to remove.
+        the string of the characters to remove.
 
     Returns
     -------
     str
-        Reformatted string: the `string` without the characters in `reform`.
+        reformatted string: the `string` without the characters in `reform`.
 
     """
     null = dict(zip([ord(i) for i in reform], [None] * len(reform)))
@@ -43,12 +43,12 @@ def get_size(nested: list) -> int:
     Parameters
     ----------
     nested : list
-        The nested list to count the elements of.
+        the nested list to count the elements of.
 
     Returns
     -------
     int
-        The number of elements in the nested list.
+        the number of elements in the nested list.
 
     """
     count = 0
@@ -67,12 +67,12 @@ def flatten(nested: list) -> list:
     Parameters
     ----------
     nested : list
-        The nested list or list of lists to flatten.
+        the nested list or list of lists to flatten.
 
     Returns
     -------
     list
-        The flattened 1D-iterable list.
+        the flattened 1D-iterable list.
 
     """
     flat = []
@@ -179,17 +179,17 @@ class Comment:
     """
     Base class to handle the comments to the Serpent 2 input.
 
-    Args:
-    -----
+    Attributes
+    ----------
     txt : str
         the text of the comment.
 
-    Methods:
-    --------
+    Methods
+    -------
     write :
-        Writes the `SEAT.Comment` instance to a file.
+        writes the `SEAT.Comment` instance to a file.
     copy :
-        Copies the object instance to another memory allocation.
+        copies the object instance to another memory allocation.
 
     """
     txt: str
@@ -214,7 +214,7 @@ class Comment:
 
         Returns
         -------
-        None
+        None.
 
         """
         with open(file=file, mode=mode) as f:
@@ -239,8 +239,8 @@ class StandaloneComment(Comment):
     Class for paragraphs of comments standing alone with respect to the text.
     Inherits from `SEAT.Comment`.
 
-    Args:
-    -----
+    Attributes
+    ----------
     txt : str
         the text of the comment.
 
@@ -255,8 +255,8 @@ class InlineComment(Comment):
     Class for inline comments standing by other text.
     Inherits from `SEAT.Comment`.
 
-    Args:
-    -----
+    Attributes
+    ----------
     txt : str
         the text of the comment.
 
@@ -272,8 +272,8 @@ class Entity:
     Base class to handle the comments to the Serpent 2 input. Provides them
     with an identity, comments and a write method.
 
-    Args :
-    -----
+    Attributes
+    ----------
     name : str | int
         the identity of the Serpent 2 entity.
     comment : SAET.Comment, optional
@@ -282,7 +282,7 @@ class Entity:
         the comment to be written on the same line as the Serpent 2 entity id.
         The default is SEAT.Comment('').
 
-    Methods:
+    Methods
     --------
     assess :
         prints the `SEAT.Entity` python id.
@@ -313,8 +313,8 @@ class Entity:
         """
         Writes the `SEAT.Entity.__str__()` to a file.
 
-        Args:
-        -----
+        Parameters
+        ----------
         file : str
             the name of the file where to write.
         mode : str, optional
@@ -334,17 +334,17 @@ class Other:
     """
     Object for not-yet-implemented Serpent 2 cards and entities.
 
-    Args:
-    -----
+    Attributes
+    ----------
     string : str
         the Serpent 2 properly formatted string for the desired implementation.
 
-    Methods:
-    --------
+    Methods
+    -------
     write :
-        Writes the `SEAT.Other` instance to a file.
+        writes the `SEAT.Other` instance to a file.
     copy :
-        Copies the object instance to another memory allocation.
+        copies the object instance to another memory allocation.
 
     """
     string: str

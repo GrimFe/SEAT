@@ -56,6 +56,22 @@ def are_nuclides(keys: set[str]) -> bool:
     return bool(np.prod([k.isalnum() for k in keys])) and bool(np.prod([not k.isalpha() for k in keys]))
 
 def unfold_composite(composite: dict[str, float]) -> dict[str, float]:
+    """
+    Unfrolds a number of elements to teir isotopic compositions
+
+    Parameters
+    ----------
+    composite : dict[str, float]
+        * key: the element symbols.
+        * float: the corresponding abundances.
+
+    Returns
+    -------
+    dict[str, float]
+        * key: the nuclide symbols.
+        * values: the corresponding abundances.
+
+    """
     return {k: v * share
             for element, share in composite.items()
             for k, v in getattr(SEAT.natural, element).items()}
@@ -92,7 +108,7 @@ def get_existing_xs(library: str) -> set:
         read = {line.strip() for line in f.readlines()}
     return read
 
-def pollute(abundance: dict[str: float], pollutants: dict[str: float]) -> dict:
+def pollute(abundance: dict[str, float], pollutants: dict[str, float]) -> dict[str, float]:
     """
     Pollutes one nuclide-defined material with some exetrnal nuclides.
 
@@ -107,7 +123,7 @@ def pollute(abundance: dict[str: float], pollutants: dict[str: float]) -> dict:
 
     Returns
     -------
-    dict
+    dict[str, float]
         * key: the symbol of the nuclide
         * value: the modified atomic density.
 
@@ -118,7 +134,7 @@ def pollute(abundance: dict[str: float], pollutants: dict[str: float]) -> dict:
                             abundance[nuclide] * sum(pollutants.values())
     return polluted
 
-def enrich(abundance: dict[str: float], enrichers: dict[str, float]) -> dict:
+def enrich(abundance: dict[str: float], enrichers: dict[str, float]) -> dict[str, float]:
     """
     Enriches one nuclide-defined material in a set of nuclides.
 
