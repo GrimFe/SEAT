@@ -31,7 +31,7 @@ class MaterialComposition:
         * key: nuclide symbol (`'Nn###'`)
         * value: densities as positive floats.
     atomic : bool
-        makes the material densities be interpreted as atomic or mass.
+        makes the nuclide densities be interpreted as atomic or mass.
     _already_za : bool
         set to true when `components.keys()` was made of ZAs.
 
@@ -684,71 +684,89 @@ class MaterialRepresentation(MaterialComposition):
 @dataclass(slots=True)
 class Material(Entity):
     """
-    Handles:
-    --------
-    Handles the material definition and operations on single materials.
+    Handles the material definition and the operations on single materials.
+    Inherits from `SEAT.Entity`.
+
+    Args :
+    -----
+    name : str or int
+        the identity of the Serpent 2 entity.
+    comment : SAET.Comment, optional
+        the comment to the Serpent entity. The default is SEAT.Comment('').
+    inline_comment : SEAT.InlineComment, optional
+        the comment to be written on the same line as the Serpent 2 entity id.
+        The default is SEAT.Comment('').
+    dens : float, optional
+        the material density. The default is None.
+    nuclide_density : bool, optional
+        makes the material density be interpreted as nuclide [cm-3] or mass
+        [g/cm3]. The default is True.
+    vol : float, optional
+        volume or cross-section (for 2D calculations) [cm3 (cm2)]. The default
+        is None.
+    mass : float, optional
+        material mass [g]. The default is None.
+    representation : `SEAT.MaterialRepresentation`
+        the material composition representation. The default is None.
+    tmp : float, optional
+        the temperature [K] for doppler preprocessing. The efault is None.
+    tms : float, optional
+        the temperature [K] for on-the-fly temperature treatment. The default
+        is None.
+    tft : tuple[float], optional
+        contains two floats for the material temperature limits [K]. The
+        default is None.
+    rgb : tuple[int], optional
+        contains three integers in range 0-255 for color channels in the plot:
+        red, green, blue respectively. The default is None.
+    burn : int, optional
+        the number of regions to burn the material. The default is 0.
+        Better use of material divisions is handled by the `divide()` method.
+    fix : dict[str, float], optional
+        the library information for decay nuclides (i.e. without cross-section data).
+        * keys: library id.
+        * value: temperature [K].
+        Only one key-value pair is allowed. The default is None.
+    moder : dict[str, int], optional
+        moderators and corresponding thermal scattering library (tsl).
+        * keys: names of the thermal scattering data libraries defined using
+                the therm card.
+        * values: ZA number of the thermal scatter (1001 for H1).
+        The default is None.
+    _mixture : str, optional
+        the mixed materials and their fractions. The efault is None.
+    _divisions: list[`SEAT.Division`], optional
+        the material divisins. The default is None.
+    _division_string: str, optional
+        header string to the divisions. The default is ''.
 
     Methods:
     --------
-    * `write()`: internal method to write on a file with proper formatting for Serpent 2 input material definition
-    * `divide()`: computes and creates the desired material divisions
-    * `get_temperature()`: gets the temperature that is not none among the many that can be passed
+    get_temperature :
+        gets the temperature of the material.
+    get_temperature_kind :
+        gets the kind of temperature in the material definition.
+    divide :
+        computes and creates the desired material divisions.
 
     Class Methods:
     --------------
-    * `mix()`: allows mixing materials to one that is the mixture to be written in the Serpent 2 input
+    mix :
+        mixes materials in a composed one.
 
-    Inherits from:
-    --------------
-    Entity
-
-    Takes:
-    ------
-    * `dens`: float - is the material density (positive values for nuclide density [cm-3] and negative values for
-        mass densities [g/cm3]).
-    * `representation`: MaterialComposition - is the material composition representation. Default is `None`
-    * `tmp`: float - is the material temperature [K] for doppler preprocessing. Default is `None`
-    * `tms`: float - is the material temperature [K] for on-the-fly temperature treatment. Default is `None`
-    * `tft`: tuple - contains two floats for the material temperature limits [K]. Default is `None`
-    * `rgb`: tuple - contains three integers in range 0-255 for color channels in the plot:
-        red, green, blue respectively. Default is `None`
-    * `vol`: float - material volume or cross-section (for 2D calculations) [cm3 (cm2)] calculations
-    * `mass`: float - material mass [g]
-    * `burn`: integer - indicates the regions to burn in the material. Default is 0, better use of divisions is handled
-        by the `divide()` method
-    * `fix`: tuple - indicates the library information for decay nuclides (i.e. without cross-section data).
-        It is composed of:
-            * string - library id
-            * float - temperature [K]
-        Default is `None`
-    * `moder`: list - lists the moderators in the material and uses thermal scattering library for that nuclides.
-        Each element in the list is a tuple composed as follows:
-            - string - name of the thermal scattering data library defined using the therm card
-            - integer - ZA number of the thermal scatter (1001 for H1)
-        Default is `None`
-    * `_mixed`: bool - identifies the material as a mixed one. Intended for internal use. Default is False.
-    * `_mixture`: string - String of the mixed materials and their fraction. Default is `None`
-
-    Required inherited parameters:
-    ------------------------------
-    * `name`: string or integer - is the identity of the Serpent 2 entity
-
-    Default internal parameters:
-    ----------------------------
-    * `divisions`: list - list of material divisions. Default is `[]`.
-    * `division_string`: string - string to set the material division. Default is ''
     """
     dens: float | None = None
+    nuclide_density: bool = True
+    vol: float = None
+    mass: float = None
     representation: MaterialRepresentation = None
     tmp: float = None
     tms: float = None
     tft: tuple[float, float] = None
     rgb: tuple[int, int, int] = None
-    vol: float = None
-    mass: float = None
     burn: int = 0
-    fix: tuple = None
-    moder: list = None
+    fix: dict[str, float] = None
+    moder: dict[str, int] = None
     _mixture: str = None
     _divisions: list = None
     _division_string: str = ''
@@ -769,7 +787,7 @@ class Material(Entity):
         if self.burn:
             string += " burn 1"
         if self.fix:
-            string += f" fix {self.fix[0]} {self.fix[1]}"
+            string += f" fix {self.fix.keys()[0]} {self.fix.values()[0]}"
         if self.moder is not None:
             string += reformat(f" moder {self.moder}", ",'()[]{}")
         string += self.inline_comment.__str__()
@@ -779,14 +797,26 @@ class Material(Entity):
         return string
 
     @classmethod
-    def mix(cls, name: str, materials: list[tuple], **kwargs) -> object:
+    def mix(cls, name: str, materials: list[tuple], **kwargs):
         """
-        Creates material mixing other materials
+        Creates material mixing other materials.
 
-        Takes:
-        ------
-        * `name`: string or integer - is the identity of the Serpent 2 entity
-        * `materials`: list of tuples - having Material object instances as first elements and fractions following
+        Args:
+        -----
+        name : str | int
+            the identity of the Serpent 2 entity.
+        materials : list[tuples[`SEAT.Material`, flaot]]
+            each tuple contains:
+                * a material.
+                * the corresponging fraction.
+        **kwargs :
+            - .. missing
+
+        Returns
+        -------
+        SEAT.Material
+            the instance created by he classmethod.
+
         """
         a = []
         for k, v in materials:
@@ -794,6 +824,22 @@ class Material(Entity):
         return cls(name=name, _mixture=''.join(a), **kwargs)
 
     def get_temperature(self) -> str:
+        """
+        Gets the temperature of the material if any of `tms`, `tmp` or `tft`
+        is defined, else gets the temperature of `SEAT.Material.representation`.
+
+        Returns
+        -------
+        str
+            the material temperature.
+        
+        Note
+        ----
+        If more no temperature or more than one temperatures are given to the
+        material, this returns the representation temperature. In doing so it
+        raises some warnings.
+
+        """
         multiple = False
         temperature = None
         if self.tms is not None:
@@ -813,52 +859,73 @@ class Material(Entity):
             temperature = self.representation.tmp
         return temperature
 
-    def get_temperature_kind(self):
+    def get_temperature_kind(self) -> str:
+        """
+        Gets the kind of temperature in the material definition.
+
+        Raises
+        ------
+        Exception
+            If no temperature type or multiple temperature types were given.
+
+        Returns
+        -------
+        kind : str
+            the temperature type.
+
+        """
         kind = None
+        number = 0
         if self.tms is not None:
             kind = 'tms'
+            number += 1
         if self.tmp is not None:
             kind = 'tmp'
+            number += 1
         if self.tft is not None:
             kind = 'tft'
-        # if double:
-        #     raise Exception(f'More than one temperature type was given to Material {self.name}')
-        return kind 
+            number += 1
+        string = "More than one temperature type" if number > 1 else "No temperature type"
+        if number != 1:
+            raise Exception(string + f' was given to Material {self.name}')
+        return kind
 
-    def divide(self, lvl: int, kind: str, sub: tuple):
+    def divide(self, lvl: int, kind: str, sub: tuple[float]):
         """
         Method to create material divisions and compute sub-volumes.
 
-        Takes:
-        ------
-        * `lvl`: integer - indicates the cell level of the division
+        Args:
+        -----
+        lvl : int
+            indicates the cell level of the division.
             (0: no division, 1: last level division, 2: second last level division, ...)
-        * `kind`: string - indicates the type of division to implement. Allowed values are:
-            * `'x_cartesian'`
-            * `'y_cartesian'`
-            * `'z_cartesian'`
-            * `'radial'`
-            * `'sectorial'`
-        * `sub`: tuple - it contains float data for the division (lengths in [cm]).
+        kind : str
+            indicates the type of division to implement.
+            Allowed `kind` values are:
+                - 'x_cartesian'
+                - 'y_cartesian'
+                - 'z_cartesian'
+                - 'radial'
+                - 'sectorial'
+        sub : tuple
+            data for the division (lengths in [cm]).
             It can be composed as follows:
-            * for  cartesian and radial division:
-                `sub` = (N, min, max), where N is the number of zones and min and max are respectively
-                                the minimum an maximum coordinates in the direction defined by `kind`
-            * for radial division it can also be:
-                `sub` = (N, r0, r1, .., rn), where N is the number of zones and ri is the radial
-                                coordinate of the i-th division
-            * for sectorial division:
-                `sub` = (N, s0), where N is the number of zones and s0 the angular coordinate of
-                                the first in [deg]
-
-        Global variables:
-        -----------------
-        * `mvol_counter`
+                - for cartesian and radial division:
+                    `sub` = (N, min, max), where N is the number of zones and
+                            min and max are respectively the minimum an maximum
+                            coordinates in the direction defined by `kind`.
+                - for radial division it can also be:
+                    `sub` = (N, r0, r1, .., rn), where N is the number of zones
+                            and ri is the radial coordinate of the i-th division.
+                - for sectorial division:
+                    `sub` = (N, s0), where N is the number of zones and s0 the
+                            angular coordinate of the first in [deg].
 
         Notes:
         ------
-        * mvol calculation not implemented for cartesian and sectorial division yet
-        * Only 2D subdivision is implemented
+        mvol calculation not implemented for cartesian and sectorial division yet
+        Only 2D subdivision is implemented
+
         """
         self._division_string = f"div {self.name} sep {lvl} sub{kind[0]} " + reformat(str(sub), "(),")
         if self._divisions is None:
