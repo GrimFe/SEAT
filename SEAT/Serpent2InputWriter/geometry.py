@@ -164,17 +164,6 @@ class Pin(Universe):
         """
         return cls([(k, v) for k, v in radi.items()], *args, **kwargs)
 
-    def write(self, file):
-        """
-        Internal method to write on a file with proper formatting for Serpent 2 input pin definition
-
-        Takes:
-        ------
-        * `file`: string - is the name of the file where to write
-        """
-        with open(file, 'a') as f:
-            f.write(self.__str__())
-
     def get_materials(self) -> list:
         return [t[0] for t in self.radi]
 
@@ -221,17 +210,6 @@ class Surface(Entity):
             string += f" {p}"
         string += self.inline_comment.__str__()
         return string
-
-    def write(self, file: str):
-        """
-        Internal method to write on a file with proper formatting for Serpent 2 input surface definition
-
-        Takes:
-        ------
-        * `file`: string - is the name of the file where to write
-        """
-        with open(file, 'a') as f:
-            f.write(self.__str__())
 
     def flip(self, ret=True):
         """
@@ -317,17 +295,6 @@ class Cell(Entity):
             string += f' {s._operator} {s.name}'
         string += self.inline_comment.__str__()
         return string
-
-    def write(self, file: str):
-        """
-        Internal method to write on a file with proper formatting for Serpent 2 input cell definition
-
-        Takes:
-        ------
-        * `file`: string - is the name of the file where to write
-        """
-        with open(file, 'a') as f:
-            f.write(self.__str__())
 
     def _nest_to_father(self):
         global UniversesIncluded
@@ -539,17 +506,6 @@ class Lattice(NestedUniverse):
         string += self.inline_comment.__str__()
         string += self.representation.__str__()
         return string
-
-    def write(self, file):
-        """
-        Internal method to write on a file with proper formatting for Serpent 2 input lattice definition
-
-        Takes:
-        ------
-        * `file`: string - is the name of the file where to write
-        """
-        with open(file, 'a') as f:
-            f.write(self.__str__())
 
     def get_materials(self) -> list:
         """
