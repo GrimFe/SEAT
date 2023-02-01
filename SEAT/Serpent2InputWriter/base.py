@@ -276,9 +276,9 @@ class Entity:
     ----------
     name : str | int
         the identity of the Serpent 2 entity.
-    comment : SAET.Comment, optional
+    comment : `SEAT.Comment`, optional
         the comment to the Serpent entity. The default is SEAT.Comment('').
-    inline_comment : SEAT.InlineComment, optional
+    inline_comment : `SEAT.InlineComment`, optional
         the comment to be written on the same line as the Serpent 2 entity id.
         The default is SEAT.Comment('').
 

@@ -107,7 +107,7 @@ class MaterialComposition:
         Returns
         -------
         SEAT.MaterialComposition
-            the instance created by he classmethod.
+            the instance created by the classmethod.
 
         Note
         ----
@@ -135,7 +135,7 @@ class MaterialComposition:
         Returns
         -------
         SEAT.MaterialComposition
-            the instance created by he classmethod.
+            the instance created by the classmethod.
 
         Note
         ----
@@ -168,7 +168,7 @@ class MaterialComposition:
         Returns
         -------
         SEAT.MaterialComposition
-            the instance created by he classmethod.
+            the instance created by the classmethod.
 
         Note
         ----
@@ -208,7 +208,7 @@ class MaterialComposition:
         Returns
         -------
         SEAT.MaterialComposition
-            the instance created by he classmethod.
+            the instance created by the classmethod.
 
         """
         if are_elements(set(abundance.keys())):
@@ -289,7 +289,7 @@ class MaterialComposition:
         Returns
         -------
         SEAT.MaterialComposition
-            the instance created by he classmethod.
+            the instance created by the classmethod.
 
         """
         if are_elements(set(abundance.keys())):
@@ -332,7 +332,7 @@ class MaterialComposition:
         Returns
         -------
         SEAT.MaterialComposition
-            the instance created by he classmethod.
+            the instance created by the classmethod.
 
         """
         if base in dir(SEAT.natural):
@@ -358,7 +358,7 @@ class MaterialComposition:
         Returns
         -------
         SEAT.MaterialComposition
-            the instance created by he classmethod.
+            the instance created by the classmethod.
 
         """
         return cls(getattr(SEAT.natural, element), atomic=True, **kwargs)
@@ -379,7 +379,7 @@ class MaterialComposition:
         Returns
         -------
         SEAT.MaterialComposition
-            the instance created by he classmethod.
+            the instance created by the classmethod.
 
         """
         
@@ -402,7 +402,7 @@ class MaterialComposition:
         Returns
         -------
         SEAT.MaterialComposition
-            the instance created by he classmethod.
+            the instance created by the classmethod.
 
         """
         return cls(unfold_composite(elements), **kwargs)
@@ -424,7 +424,7 @@ class MaterialComposition:
         Returns
         -------
         SEAT.MaterialComposition
-            the instance created by he classmethod.
+            the instance created by the classmethod.
 
         """
         components = dict(zip([zam2nuclide(z) for z in zam.keys()], zam.values()))
@@ -447,7 +447,7 @@ class MaterialComposition:
         Returns
         -------
         SEAT.MaterialComposition
-            the instance created by he classmethod.
+            the instance created by the classmethod.
 
         """
         instance = cls(za, **kwargs)
@@ -473,7 +473,7 @@ class MaterialComposition:
         Returns
         -------
         SEAT.MaterialComposition
-            the instance created by he classmethod.
+            the instance created by the classmethod.
 
         """
         components = dict(zip([n.replace(sep, '') for n in nuclides.keys()], nuclides.values()))
@@ -563,14 +563,16 @@ class MaterialRepresentation(MaterialComposition):
 
     Methods:
     --------
+    write :
+        writes the `SEAT.MaterialRepresentation` instance to a file.
+    adjust :
+        adjusts the material composition to a nuclear data library.
     get_temperature : 
         formats the temperature according to Serpent 2 syntax.
     get_nuclide_representation :
         formats the nuclides in the composition as: {ZA}.{`tmp`}{`data_type`}.
     get_values :
         gets the density of the nuclides in the `SEAT.MaterialRepresentation`.
-    write:
-        writes the `SEAT.MaterialRepresentation` instance to a file.
 
     Class methods:
     --------------
@@ -689,11 +691,11 @@ class Material(Entity):
 
     Attributes
     ----------
-    name : str or int
+    name : str | int
         the identity of the Serpent 2 entity.
-    comment : SAET.Comment, optional
+    comment : `SEAT.Comment`, optional
         the comment to the Serpent entity. The default is SEAT.Comment('').
-    inline_comment : SEAT.InlineComment, optional
+    inline_comment : `SEAT.InlineComment`, optional
         the comment to be written on the same line as the Serpent 2 entity id.
         The default is SEAT.Comment('').
     dens : float, optional
@@ -742,6 +744,10 @@ class Material(Entity):
 
     Methods:
     --------
+    assess :
+        prints the `SEAT.Material` python id.
+    write :
+        writes the `SEAT.Material` to a file.
     get_temperature :
         gets the temperature of the material.
     get_temperature_kind :
@@ -815,7 +821,7 @@ class Material(Entity):
         Returns
         -------
         SEAT.Material
-            the instance created by he classmethod.
+            the instance created by the classmethod.
 
         """
         a = []
@@ -998,8 +1004,8 @@ class Division:
         """
         Copies the object instance to another memory allocation.
 
-        Returns:
-        --------
+        Returns
+        -------
         SEAT.Other
             a copy of the `SEAT.Other` instance.
 
@@ -1017,8 +1023,8 @@ class Composition:
         * restart files
         * materials
 
-    Attributes:
-    -----------
+    Attributes
+    ----------
     materials : list[`SEAT.Material`]
         the materials of the simulation.
     libraries : dict[str, str]
@@ -1045,10 +1051,10 @@ class Composition:
         the name of the binary restart file the composition should be read
         from. The default is None.
 
-    Methods:
-    --------
+    Methods
+    -------
     write :
-        writes the `SEAT.composition` to a file.
+        writes the `SEAT.Composition` to a file.
     get_subdivisions :
         lists the subdivisions of the materials in the composition.
 
