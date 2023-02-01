@@ -9,7 +9,7 @@ import SEAT.composites
 from SEAT.composition_functions import *
 
 from SEAT.nuclides import zam2nuclide, nuclide2zam, nuclide2za
-from SEAT.Serpent2InputWriter.base import Entity, reformat
+from SEAT.Serpent2InputWriter.base import Entity, Comment, reformat
 
 __author__ = "Federico Grimaldi"
 __all__ = [
@@ -950,19 +950,22 @@ class Material(Entity):
 @dataclass(slots=True)
 class Division:
     """
-    Handles:
-    --------
-    Handles the cell division definition as well as operations on single divisions.
+    Handles the cell division definition and operations on single divisions.
+
+    Attributes:
+    -----------
+    material : `SEAT.Material`
+        the material of the division.
+    volume : float
+        the volume of the division.
 
     Methods:
     --------
-    * `write()`: internal method to write on a file with proper formatting for Serpent 2 input surface definition
-    * `copy()`: deep copies the object.
+    write :
+        writes the `SEAT.Division` to a file.
+    copy :
+        copies the object instance to another memory allocation.
 
-    Takes:
-    ------
-    * `material`: Material object instance - is material of the division
-    * `volume`: float - is the volume of the division
     """
     material: Material
     volume: float
@@ -971,15 +974,23 @@ class Division:
         string = f"{self.material.name} {self.volume}"
         return string
 
-    def write(self, file: str):
+    def write(self, file: str, mode: str='a'):
         """
-        Internal method to write on a file with proper formatting for Serpent 2 input division definition
+        Writes the `SEAT.Division` instance to a file.
 
-        Takes:
-        ------
-        * `file`: string - is the name of the file where to write
+        Parameters
+        ----------
+        file : str
+            name of the file to write to.
+        mode : str, optional
+            mode to open the file. The default is 'a'.
+
+        Returns
+        -------
+        None.
+
         """
-        with open(file, 'a') as f:
+        with open(file, mode=mode) as f:
             f.write(self.__str__())
 
     def copy(self):
@@ -988,7 +999,9 @@ class Division:
 
         Returns:
         --------
-        Returns a variable pointing to the new memory allocation
+        SEAT.Other
+            a copy of the `SEAT.Other` instance.
+
         """
         return cp.deepcopy(self)
 
@@ -996,13 +1009,40 @@ class Division:
 @dataclass(slots=True)
 class Composition:
     """
-    Handles:
-    --------
-    Handles the composition section of the Serpent 2 input file, which composes of:
+    Handles the composition of the Serpent 2 input, which composes of:
         * nuclear data libraries link
         * unresolved resonance probability table
         * thermal scattering data
         * restart files
+        * materials
+
+    Attributes:
+    -----------
+    materials : list[`SEAT.Material`]
+        the materials of the simulation.
+    libraries : dict[str, str]
+        nuclear data libraries to use in the simulation.
+        * keys: Serpent library identifiers (.. list options ..).
+        * values: raw-string paths as values.
+    scattering_name : str, optional
+        thermal scattering data name. The default is None.
+    scattering_type : str, optional
+        interpolation method.
+        Allowed `scattering_type` values are:
+            - '': interpolation with the makxsf code methodology.
+            - 'stoch': stochastic interpolation. Not allowed for on-the-fly
+                    interpolation.
+        The default is ''.
+    scattering_tmp : float, optional
+        interpolation temperature for the scattering data. The default is None.
+    scattering_libs : list[str], optional
+        items are the thermal scattering data identifiers. The default is [].
+    to_restart : str, optional
+        the name of the binary restart file the composition should be written
+        to. The default is None.
+    from_restart : str
+        the name of the binary restart file the composition should be read
+        from. The default is `None`.
 
     Methods:
     --------
@@ -1013,24 +1053,14 @@ class Composition:
         - restart files
     * `get_subdivisions()`: gets the subdivisions of the materials in the composition
 
-    Takes:
-    ------
-    * `materials`: list - list of Material object instances to introduce in the Composition
-    * `libraries`: dictionary - has Serpent library identifiers as keys and raw string paths as values
-    * `scattering`: dictionary - includes a tuple with the interpolation type and the name of the library as key
-        and tuples as values. The interpolation type can either be `''` or `'stoch'`, for stochastic interpolation.
-        The values are composed of a float indicating the temperature and of a list of strings identifying the
-        libraries. A temperature value of 0 induces an interpolation of the libraries whereas a temperature set to
-        `None` or negative values write no temperature.
-        Default is `None`.
-    * `to_restart`: string - the name of the binary restart file to which the composition should be written.
-        Default is `None`.
-    * `from_restart`: string - the name of the binary restart file from which the composition should be read.
-        Default is `None`.
+    
     """
     materials: list[Material]
     libraries: dict[str, str]
-    scattering: dict[tuple[str, str], tuple[float, list]] = None
+    scattering_name : str = None
+    scattering_type : str = ''
+    scattering_tmp : float = None
+    scattering_libs : list[str] = []
     to_restart: str = None
     from_restart: str = None
 
@@ -1040,15 +1070,11 @@ class Composition:
             string += f"{k} '{v}'\n"
         string += '\n'
         if self.scattering is not None:
-            for k, v in self.scattering.items():
-                type_ = k[0]
-                name = k[1]
-                interpolation = str(v[0]) if v[0] is not None and v[0] >= 0 else ''
-                lib = reformat(str(v[1:]), "[](),'")
-                string += f'therm{type_} {name} {interpolation} {lib}\n'
+            libs = reformat(str(self.scattering_libs), "[],'")
+            string += f'therm{self.scattering_type} {self.scattering_name} {self.scattering_tmp} {libs}\n'
         if self.to_restart is not None or self.from_restart is not None:
             string += '\n'
-            string += "/* Composition restart file definition */\n"
+            string += Comment("Composition restart file definition").__str__()
             string += f"rfw {self.to_restart}\n" if self.to_restart is not None else ''
             string += f"rfw {self.from_restart}\n" if self.from_restart is not None else ''
         string += '\n'
@@ -1057,29 +1083,34 @@ class Composition:
         string += '\n'
         return string
 
-    def write(self, file: str):
+    def write(self, file: str, mode: str='a'):
         """
-        internal method to write on a file the handled items. They are written in the following order:
-        - material
-        - libraries
-        - thermal scattering data
-        - restart files
+        Writes the `SEAT.Composition.__str__()` to a file.
 
-        Takes:
-        ------
-        * `file`: string - is the name of the file where to write
+        Args:
+        -----
+        file : str
+            the name of the file where to write.
+        mode : str, optional
+            mode to open the file. The default is 'a'.
+
+        Returns
+        -------
+        None.
+
         """
-        with open(file, 'a') as f:
+        with open(file, mode=mode) as f:
             f.write(self.__str__())
 
-    def get_subdivisions(self) -> list:
+    def get_subdivisions(self) -> list[Division]:
         """
-        Transforms the subdivision lists in the composition composing materials in one single list for the whole
-        composition.
+        Gets a list of all the subdivisions in the `SEAT.Composition`.
 
         Returns:
         --------
-        `out`: list - contains the subdivisions
+        list[`SEAT.Division`]
+            the subdivisions.
+
         """
         out = []
         for m in self.materials:
