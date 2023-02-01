@@ -483,16 +483,23 @@ class DivisionWrapper:
     """
     Handles the labelling of the divisions.
 
-    Takes:
-    ------
-    * `div`: list - list of divisions to label and sort.
-    """
+    Parameters
+    ----------
+    div: list[`SEAT.Division`]
+        the divisions to label and sort.
 
+    """
     divisions: list[Division]
 
     def format_sort(self) -> str:
         """
         Labels and sorts the divisions in the wrapper writing them to a string.
+
+        Returns
+        -------
+        str
+            the formatted string of the divisions.
+
         """
         counter = {}
         ordered = [d.__str__() for d in self.divisions]
@@ -510,17 +517,29 @@ class DivisionWrapper:
 @dataclass(slots=True)
 class DivisionWriter:
     """
-    Handles the writing process of the divisions
+    Handles the writing process of the divisions.
 
-    Takes:
-    ------
-    * `strings`: list - list of division strings.
-    * `divisions`: DivisionWrapper object instance - the divisions properly wrapped.
+    Attributes
+    ----------
+    strings : list[str]
+        the division strings.
+    divisions : `SEAT.DivisionWrapper`
+        properly wrapped divisions to write.
+
     """
     strings: list[str]
     divisions: DivisionWrapper
 
-    def to_string(self):
+    def to_string(self) -> str:
+        """
+        Writes the wrapped divisions to a string properly headed.
+
+        Returns
+        -------
+        str
+            the division string to write to the simulation.
+
+        """
         string = reformat(str(set(self.strings)), "{}'").replace(', ', '\n') + '\n'
         if None not in {self.divisions}:
             string += '\n'
