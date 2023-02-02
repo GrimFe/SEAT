@@ -5,7 +5,6 @@ import copy as cp
 from SEAT.Serpent2InputWriter.base import Entity, reformat
 from SEAT.Serpent2InputWriter.composition import Material
 
-from typing import List
 from dataclasses import dataclass, field
 
 __author__ = "Federico Grimaldi"
@@ -55,7 +54,7 @@ class Universe(Entity):
         lists the materials in the Universe.
 
     """
-    materials: List[Material] = field(default_factory=list)
+    materials: list[str] = field(default_factory=list)
 
     def __post_init__(self):
         self.materials = self.materials if self.materials else [None]  # is this really needed?
@@ -118,7 +117,7 @@ class NestedUniverse(Universe):
         adds a Universe-like object to the nested universe.
 
     """
-    daughters: List[Universe] = field(default_factory=list)
+    daughters: list[Universe] = field(default_factory=list)
 
     def __iter__(self):
         return self.daughters.__iter__()
@@ -202,7 +201,7 @@ class Pin(Universe):
         creates the Pin from a dictionary coupling Material and radius.
 
     """
-    radi: List[tuple[Material, float]] = field(default_factory=list)
+    radi: list[tuple[Material, float]] = field(default_factory=list)
 
     def __str__(self):
         string = self.comment.__str__() + f"pin {self.name}" + self.inline_comment.__str__()
@@ -281,7 +280,7 @@ class Surface(Entity):
         copies the object instance to another memory allocation.
 
     """
-    parameters: List[float] = field(default_factory=list)
+    parameters: list[float] = field(default_factory=list)
     kind: str = 'sqc'
     _operator: str = ''
 
@@ -373,7 +372,7 @@ class Cell(Entity):
 
     """
 
-    delimiters: List[Surface] = field(default_factory=list)
+    delimiters: list[Surface] = field(default_factory=list)
     father: NestedUniverse = None  # required
     kind: str = 'outside'
     filler: Universe | None = None
@@ -658,7 +657,7 @@ class Lattice(NestedUniverse):
         adds a Universe-like object to the nested universe.
 
     """
-    parameters: List[float] = field(default_factory=list)
+    parameters: list[float] = field(default_factory=list)
     representation: LatticeRepresentation = None
     kind: int = 1
 
@@ -733,10 +732,10 @@ class Geometry:
         writes the `SEAT.Geometry` to a file.
 
     """
-    pins: List[Pin] = field(default_factory=list)
-    surfaces: List[Surface] = field(default_factory=list)
-    cells: List[Cell] = field(default_factory=list)
-    lattices: List[Lattice] = field(default_factory=list)
+    pins: list[Pin] = field(default_factory=list)
+    surfaces: list[Surface] = field(default_factory=list)
+    cells: list[Cell] = field(default_factory=list)
+    lattices: list[Lattice] = field(default_factory=list)
 
     def __str__(self):
         string = ''

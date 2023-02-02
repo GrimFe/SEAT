@@ -742,8 +742,8 @@ class Material(Entity):
     _division_string: str, optional
         header string to the divisions. The default is ''.
 
-    Methods:
-    --------
+    Methods
+    -------
     assess :
         prints the `SEAT.Material` python id.
     write :
@@ -755,8 +755,8 @@ class Material(Entity):
     divide :
         computes and creates the desired material divisions.
 
-    Class Methods:
-    --------------
+    Class Methods
+    -------------
     mix :
         mixes materials in a composed one.
 
@@ -959,15 +959,15 @@ class Division:
     """
     Handles the cell division definition and operations on single divisions.
 
-    Attributes:
-    -----------
+    Attributes
+    ----------
     material : `SEAT.Material`
         the material of the division.
     volume : float
         the volume of the division.
 
-    Methods:
-    --------
+    Methods
+    -------
     write :
         writes the `SEAT.Division` to a file.
     copy :
@@ -1065,7 +1065,7 @@ class Composition:
     scattering_name : str = None
     scattering_type : str = ''
     scattering_tmp : float = None
-    scattering_libs : list[str] = []
+    scattering_libs : list[str] = field(default_factory=list)
     to_restart: str = None
     from_restart: str = None
 
