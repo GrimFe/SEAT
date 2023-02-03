@@ -1066,7 +1066,11 @@ class Composition:
     get_subdivisions :
         lists the subdivisions of the materials in the composition.
 
-    
+    Note
+    ----
+    The minimal parameters for the scattering definition are `scattering_name`
+    and `scattering_libs`.
+
     """
     materials: list[Material]
     libraries: dict[str, str]
@@ -1082,7 +1086,7 @@ class Composition:
         for k, v in self.libraries.items():
             string += f"{k} '{v}'\n"
         string += '\n'
-        if self.scattering is not None:
+        if self.scattering_name is not None:
             libs = reformat(str(self.scattering_libs), "[],'")
             string += f'therm{self.scattering_type} {self.scattering_name} {self.scattering_tmp} {libs}\n'
         if self.to_restart is not None or self.from_restart is not None:
