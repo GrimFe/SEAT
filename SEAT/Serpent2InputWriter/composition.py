@@ -735,7 +735,7 @@ class Material(Entity):
     fix : dict[str, float], optional
         the library information for decay nuclides (i.e. without cross-section data).
         * key: library id.
-        * valu: temperature [K].
+        * value: temperature [K].
         Only one key-value pair is allowed. The default is None.
     moder : dict[str, int], optional
         moderators and corresponding thermal scattering library (tsl).
@@ -801,9 +801,9 @@ class Material(Entity):
         if self.burn:
             string += " burn 1"
         if self.fix:
-            string += f" fix {self.fix.keys()[0]} {self.fix.values()[0]}"
+            string += f" fix {list(self.fix.keys())[0]} {list(self.fix.values())[0]}"
         if self.moder is not None:
-            string += reformat(f" moder {self.moder}", ",'()[]{}")
+            string += reformat(f" moder {self.moder}", ",'()[]{}:")
         string += self.inline_comment.__str__()
         if self._mixture is None:
             string += self.representation.__str__()
