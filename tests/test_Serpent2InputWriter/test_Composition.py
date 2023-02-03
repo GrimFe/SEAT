@@ -234,7 +234,10 @@ class Test_Composition:
     comp = composition.Composition(
         materials=[mat],
         libraries={lib: path},
-        scattering={('', 'lwe70'): (-1, ['lwtr.16t'])})
+        scattering_name='lwe70',
+        scattering_type='',
+        scattering_tmp=-1,
+        scattering_libs=['lwtr.16t'])
 
     STR = f"{lib} '{path}'\n\ntherm lwe70  lwtr.16t\n\n{mat}\n"
 

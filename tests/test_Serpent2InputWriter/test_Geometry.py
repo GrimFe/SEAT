@@ -36,9 +36,9 @@ class Test_NestedUniverse:
     def test_get_materials(self) -> None:
         assert self.uni.get_materials() == []
 
-    def test_add_universe(self) -> None:
+    def test_nest_universe(self) -> None:
         extra_universe = geometry.Universe(name="Extra")
-        self.uni.add_universe(extra_universe)
+        self.uni.nest_universe(extra_universe)
         assert self.uni.daughters == [extra_universe]
 
 
@@ -182,7 +182,7 @@ class Test_Lattice:
             (UNIVERSE2, sample_position)])
         lattice = geometry.Lattice(name=UniverseNames.LATTICE, parameters=[0, 0, 15, 15, 1.43],
                                    representation=representation,
-                                   typ=1)
+                                   kind=1)
         assert lattice.__str__() == "lat " + UniverseNames.LATTICE + " 1 0 0 15 15 1.43\n" + TargetLatticesStrings.GU3_LIKE
 
     def test_sub_universes(self) -> None:
