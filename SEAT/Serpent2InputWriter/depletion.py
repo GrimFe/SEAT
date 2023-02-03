@@ -13,31 +13,37 @@ __all__ = [
 @dataclass(slots=True)
 class Normalization:
     """
-    Handles:
-    --------
-    Handles the flux normalization option and relative value to which normalise
+    Class for the flux normalization.
+
+    Attributes
+    ----------
+    value : float
+        the power density (kW/g), the power (W) or anything needed for flux
+        normalization.
+    material : SEAT.Material
+        the `SEAT.Material` instance in which the power is normalized.
+        If `material == ''` then the normalization will be referred to the
+        average power produced in the system.
+    kind : str
+        the type of normalization imposed. The default is 'powdens'.
+        Allowed `kind` values are:
+            - 'powdens': normalization to power density
+            - 'power': normalization to total fission power
+            - 'flux': normalization to total flux
+            - 'genrate': normalization to neutron generation rate
+            - 'fissrate': normalization to fission rate
+            - 'absrate': normalization to absorption rate
+            - 'lossrate': normalization to loss rate
+            - 'srcrate': normalization to source rate
+            - 'sfrate': normalization to spontaneous fission rate
 
     Methods:
     --------
-    * `write()`: internal method to write on a file with proper formatting for Serpent 2 input normalization condition
-        definition
-    * `copy()`: copies the object instance to another memory allocation
+    write :
+        writes the `SEAT.Normalization` instance to a file.
+    copy :
+        copies the object instance to another memory allocation.
 
-    Takes:
-    ------
-    * `value`: float - is either the power density (kW/g), the power (W) or anything needed for flux normalization
-    * `material`: Material object instance - is the Material in which the normalization power is generated.
-        `material == ''` then `power` will be referred to the average power produced in the system.
-    * `kind`: string - is the type of normalization imposed. Default is `'powdens'`. It can be:
-        - `'powdens'`: normalization to power density
-        - `'power'`: normalization to total fission power
-        - `'flux'`: normalization to total flux
-        - `'genrate'`: normalization to neutron generation rate
-        - `'fissrate'`: normalization to fission rate
-        - `'absrate'`: normalization to absorption rate
-        - `'lossrate'`: normalization to loss rate
-        - `'srcrate'`: normalization to source rate
-        - `'sfrate'`: normalization to spontaneous fission rate
     """
     value: float
     material: Material
@@ -47,15 +53,23 @@ class Normalization:
         string = f'set {self.kind} {self.value} {self.material.name}\n'
         return string
 
-    def write(self, file: str):
+    def write(self, file: str, mode: str='a'):
         """
-        Internal method to write on a file with proper formatting for Serpent 2 input normalization definition
+        Writes the `SEAT.Normalization` instance to a file.
 
-        Takes:
-        ------
-        * `file`: string - is the name of the file where to write
+        Parameters
+        ----------
+        file : str
+            name of the file to write to.
+        mode : str, optional
+            mode to open the file. The default is 'a'.
+
+        Returns
+        -------
+        None.
+
         """
-        with open(file, 'a') as f:
+        with open(file, mode=mode) as f:
             f.write(self.__str__())
 
     def copy(self):
@@ -64,7 +78,9 @@ class Normalization:
 
         Returns:
         --------
-        Returns a variable pointing to the new memory allocation
+        SEAT.Other
+            a copy of the `SEAT.Other` instance.
+
         """
         return cp.deepcopy(self)
 
@@ -72,33 +88,46 @@ class Normalization:
 @dataclass(slots=True)
 class Interval:
     """
-    Handles:
-    --------
-    Handles the time interval over which a calculation step takes place
+    Class for the normalization interval.
+
+    Attributes
+    ----------
+    span : float
+        the duration of the interval.
+    total : bool
+        identifyes whether the step is integral. The default is False.
+    kind : str
+        the type of interval chosen, which also defines the `span` units.
+        The default is 'day'.
+        Allowed `kind` values are:
+            - 'bu': burn-up interval (MWd/kgHM)
+            - 'day': time interval (days)
+            - 'dec': decay interval (days)
+            - 'act': activation interval (days)
 
     Methods:
     --------
-    * `write()`: internal method to write on a file with proper formatting for Serpent 2 input time interval definition
-    * `copy()`: copies the object instance to another memory allocation
+    write :
+        writes the `SEAT.Interval` instance to a file.
+    copy :
+        copies the object instance to another memory allocation.
 
-    Takes:
-    ------
-    * `span`: float - is the duration of the interval
-    * `span_type`: string - is the type of the desired time interval, defining its units as well.
-        It can either be:
-            *`'bu'` for burn-up interval (MWd/kgHM)
-            *`'day'` for time interval (days)
-            *`'dec'` for decay interval (days)
-            *`'act'` for activation interval (days)
-    * `total`: bool - is the boolean identifying if the step is integral or not.
-        Default value is `False`, corresponding to non-total step
     """
     span: float
-    span_type: str = 'day'
     total: bool = False
+    span_type: str = 'day'
 
     @property
-    def step(self):
+    def step(self) -> str:
+        """
+        The type of step chosen: total or step.
+
+        Returns
+        -------
+        step_ : str
+            Serpent 2 identifier for the selected step type.
+
+        """
         step_ = 'tot' if self.total else 'step'
         return step_
 
@@ -106,15 +135,23 @@ class Interval:
         string = f"dep {self.span_type}{self.step} {self.span}\n"
         return string
 
-    def write(self, file: str):
+    def write(self, file: str, mode: str='a'):
         """
-        Internal method to write on a file with proper formatting for Serpent 2 input syntax
+        Writes the `SEAT.Interval` instance to a file.
 
-        Takes:
-        ------
-        * `file`: string - is the name of the file where to write
+        Parameters
+        ----------
+        file : str
+            name of the file to write to.
+        mode : str, optional
+            mode to open the file. The default is 'a'.
+
+        Returns
+        -------
+        None.
+
         """
-        with open(file, 'a') as f:
+        with open(file, mode=mode) as f:
             f.write(self.__str__())
 
     def copy(self):
@@ -123,7 +160,9 @@ class Interval:
 
         Returns:
         --------
-        Returns a variable pointing to the new memory allocation
+        SEAT.Other
+            a copy of the `SEAT.Other` instance.
+
         """
         return cp.deepcopy(self)
 
@@ -131,20 +170,20 @@ class Interval:
 @dataclass(slots=True)
 class Depletion:
     """
-    Handles:
-    --------
-    Handles the coupling of depletion time step and relative normalization
+    Class for the depletion, coupling `SEAT.Normalization` and `SEAT.Interval`.
+
+    Attributes
+    ----------
+    steps : list[tuple]
+        couples a `SEAT.Normalization` instance and a `SEAT.Interval` instance.
 
     Methods:
     --------
-    * `write()`: internal method to write on a file with proper formatting for Serpent 2 input syntax
+    write :
+        writes the `SEAT.Interval` instance to a file.
 
-    Takes:
-    ------
-    * `steps`: list - is a list of tuples linking a Normalization object instance and an Interval object instance,
-        in this order
     """
-    steps: list
+    steps: list[tuple]
 
     def __str__(self):
         string = ''
@@ -154,13 +193,21 @@ class Depletion:
         string += "\n"
         return string
 
-    def write(self, file: str):
+    def write(self, file: str, mode: str='a'):
         """
-        Internal method to write on a file with proper formatting for Serpent 2 input comment, inserted in '/*' '*/'
+        Writes the `SEAT.Depletion` instance to a file.
 
-        Takes:
-        ------
-        * `file`: string - is the name of the file where to write
+        Parameters
+        ----------
+        file : str
+            name of the file to write to.
+        mode : str, optional
+            mode to open the file. The default is 'a'.
+
+        Returns
+        -------
+        None.
+
         """
-        with open(file, 'a') as f:
+        with open(file, mode=mode) as f:
             f.write(self.__str__())

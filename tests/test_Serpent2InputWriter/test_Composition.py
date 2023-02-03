@@ -151,7 +151,7 @@ class Test_Material:
     RGB = '255 255 255'
     VOL = 1
     MASS = 1
-    FIX = '1 1'
+    FIX = '09c 900'
     MODER = 'lwe70 2004'
     TARGET_STRING_ALL = f"mat {TEST_NAME} {DENSITY} tmp {TEMPERATURE} rgb {RGB} vol {VOL} mass {MASS} burn {BURN} fix {FIX} moder {MODER}\n" + \
                         f"2003.{TEMPERATURE / 100:.0f}c {list(COMPONENTS.items())[0][1]}\n" + \
@@ -184,9 +184,11 @@ class Test_Material:
         assert mat.__str__() == self._target_string('tft', 1)
 
     def test_other_parameters(self) -> None:
-        mat = composition.Material(name=TEST_NAME, dens=self.DENSITY, representation=self.REPRESENTATION, burn=True,
-                                   tmp=self.TEMPERATURE,
-                                   rgb=(255, 255, 255), vol=1, mass=1, fix=(1, 1), moder=[('lwe70', 2004)])
+        mat = composition.Material(name=TEST_NAME, dens=self.DENSITY,
+                                   representation=self.REPRESENTATION,
+                                   burn=True, tmp=self.TEMPERATURE,
+                                   rgb=(255, 255, 255), vol=1, mass=1,
+                                   fix={"09c": 900}, moder={'lwe70': 2004})
         assert mat.__str__() == self.TARGET_STRING_ALL
 
     def test_mix(self) -> None:
@@ -234,9 +236,12 @@ class Test_Composition:
     comp = composition.Composition(
         materials=[mat],
         libraries={lib: path},
-        scattering={('', 'lwe70'): (-1, ['lwtr.16t'])})
+        scattering_name='lwe70',
+        scattering_type='',
+        scattering_tmp=-1,
+        scattering_libs=['lwtr.16t'])
 
-    STR = f"{lib} '{path}'\n\ntherm lwe70  lwtr.16t\n\n{mat}\n"
+    STR = f"{lib} '{path}'\n\ntherm lwe70 -1 lwtr.16t\n\n{mat}\n"
 
     def test_str(self) -> None:
         assert self.comp.__str__() == self.STR

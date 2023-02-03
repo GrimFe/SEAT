@@ -17,11 +17,20 @@ __all__ = [
 
 def reformat(string: str, reform: str) -> str:
     """
-    Cleans a string from what is to be reformed.
+    Removes from one string all characters present in another string.
 
-    :param string: 'str' - the string to reformat
-    :param reform: 'str' - the string with the items to remove from the string
-    :return: reformatted string
+    Parameters
+    ----------
+    string : str
+        the string to remove characters from.
+    reform : str
+        the string of the characters to remove.
+
+    Returns
+    -------
+    str
+        reformatted string: the `string` without the characters in `reform`.
+
     """
     null = dict(zip([ord(i) for i in reform], [None] * len(reform)))
     return string.translate(null)
@@ -29,11 +38,18 @@ def reformat(string: str, reform: str) -> str:
 
 def get_size(nested: list) -> int:
     """
-    Function to get number of elements in a nested list
+    Comutes the number of elements in a nested list.
 
-    Takes:
-    ------
-    * `nested`: list - the nested list to count the elements of
+    Parameters
+    ----------
+    nested : list
+        the nested list to count the elements of.
+
+    Returns
+    -------
+    int
+        the number of elements in the nested list.
+
     """
     count = 0
     for elem in nested:
@@ -46,11 +62,18 @@ def get_size(nested: list) -> int:
 
 def flatten(nested: list) -> list:
     """
-    Function to flatten a nested list or a list of lists to a 1D list.
+    Flattens a nested list to a 1D-iterable list.
 
-    Takes:
-    ------
-    * `nested`: list - the nested list or list of list to flatten
+    Parameters
+    ----------
+    nested : list
+        the nested list or list of lists to flatten.
+
+    Returns
+    -------
+    list
+        the flattened 1D-iterable list.
+
     """
     flat = []
     for elem in nested:
@@ -63,11 +86,19 @@ def flatten(nested: list) -> list:
 
 def intersect(surfaces: list) -> list:
     """
-    Function to handle operators for surface intersection: operator is ''
+    Handles the surface intersection operator ('' in Serpent 2).
 
-    Takes:
-    ------
-    * `surfaces`: list - contains Surface object instances to intersect
+    Parameters
+    ----------
+    surfaces : list
+        the `SEAT.Surface` instances to intersect.
+
+    Returns
+    -------
+    list
+        the `SEAT.Surface` instances with operator modified to be also
+        intersection.
+
     """
     flat = flatten(surfaces)
     out = [flat[0].copy()]
@@ -80,11 +111,18 @@ def intersect(surfaces: list) -> list:
 
 def unite(surfaces: list) -> list:
     """
-    Function to handle operators for surface union: operator is ':'
+    Handles the surface union operator (':' in Serpent 2).
 
-    Takes:
-    ------
-    * `surfaces`: list - contains Surface object instances to unite
+    Parameters
+    ----------
+    surfaces : list
+        the `SEAT.Surface` instances to intersect.
+
+    Returns
+    -------
+    list
+        the `SEAT.Surface` instances with operator modified to be also union.
+
     """
     flat = flatten(surfaces)
     out = [flat[0].copy()]
@@ -95,13 +133,21 @@ def unite(surfaces: list) -> list:
     return out
 
 
-def surface_complement(surfaces: list) -> list:
+def surface_complement(surfaces: list) -> list:    
     """
-    Function to handle surface complement (flipping): operator is '-'
+    Handles the surface surface complement operator ('-' in Serpent 2).
 
-    Takes:
-    ------
-    * `surfaces`: list - contains Surface object instances to complement
+    Parameters
+    ----------
+    surfaces : list
+        the `SEAT.Surface` instances to complement.
+
+    Returns
+    -------
+    list
+        the `SEAT.Surface` instances with operator modified to be also
+        complement.
+
     """
     flat = flatten(surfaces)
     out = []
@@ -131,18 +177,20 @@ def surface_complement(surfaces: list) -> list:
 @dataclass(slots=True)
 class Comment:
     """
-    Handles:
-    --------
-    Base class to handle the comments to the Serpent 2 input
+    Base class to handle the comments to the Serpent 2 input.
 
-    Methods:
-    --------
-    * `write()`: internal method to write on a file with proper formatting for Serpent 2 input time interval definition
-    * `copy()`: copies the object instance to another memory allocation
+    Attributes
+    ----------
+    txt : str
+        the text of the comment.
 
-    Takes:
-    ------
-    * `txt`: string - the comment text
+    Methods
+    -------
+    write :
+        writes the `SEAT.Comment` instance to a file.
+    copy :
+        copies the object instance to another memory allocation.
+
     """
     txt: str
 
@@ -152,24 +200,35 @@ class Comment:
     def __add__(self, comment2):
         return Comment(self.txt + '\n   ' + comment2.txt)
 
-    def write(self, file: str):
+    def write(self, file: str, mode: str='a') -> None:
         """
-        Method to write on a file with proper formatting for Serpent 2 input comment, inserted in '/*' '*/'
+        Writes the `SEAT.Comment` instance to a file according to the Serpent 2
+        syntax ('/* {comment} */').
 
-        Takes:
-        ------
-        * `file`: string - is the name of the file where to write
+        Parameters
+        ----------
+        file : str
+            name of the file to write to.
+        mode : str, optional
+            mode to open the file. The default is 'a'.
+
+        Returns
+        -------
+        None.
+
         """
-        with open(file=file, mode='a') as f:
+        with open(file=file, mode=mode) as f:
             f.write(self.__str__())
 
     def copy(self):
         """
         Copies the object instance to another memory allocation.
 
-        Returns:
-        --------
-        Returns a variable pointing to a new memory allocation
+        Returns
+        -------
+        SEAT.Comment
+            a copy of the copied `SEAT.Comment` instance.
+
         """
         return cp.deepcopy(self)
 
@@ -177,19 +236,15 @@ class Comment:
 @dataclass(slots=True)
 class StandaloneComment(Comment):
     """
-    Handles:
-    --------
-    Handles the comments to the Serpent 2 input standing alone
+    Class for paragraphs of comments standing alone with respect to the text.
+    Inherits from `SEAT.Comment`.
 
-    Inherits from:
-    --------------
-    Comment
+    Attributes
+    ----------
+    txt : str
+        the text of the comment.
 
-    Required inherited parameters:
-    ------------------------------
-    * `txt`: string - the comment text
     """
-
     def __str__(self):
         return f'/* {self.txt} */\n\n' if self.txt != '' else ''
 
@@ -197,19 +252,15 @@ class StandaloneComment(Comment):
 @dataclass(slots=True)
 class InlineComment(Comment):
     """
-    Handles:
-    --------
-    Handles the in-line comments to the Serpent 2 input
+    Class for inline comments standing by other text.
+    Inherits from `SEAT.Comment`.
 
-    Inherits from:
-    --------------
-    Comment
+    Attributes
+    ----------
+    txt : str
+        the text of the comment.
 
-    Required inherited parameters:
-    ------------------------------
-    * `txt`: string - the comment text
     """
-
     def __str__(self):
         txt = ''.join(self.txt.split('\n'))
         return f'  % {txt}\n' if txt != '' else '\n'
@@ -218,18 +269,28 @@ class InlineComment(Comment):
 @dataclass(slots=True)
 class Entity:
     """
-    Handles:
-    --------
-    General attributes of Serpent 2 input entities: provides them with identity and comment
+    Base class to handle the comments to the Serpent 2 input. Provides them
+    with an identity, comments and a write method.
 
-    Takes:
-    ------
-    * `name`: string or integer - is the identity of the Serpent 2 entity
-    * `comment`: Comment object instance - is the comment to the Serpent entity. Default is empty comment
-    * `inline_comment`: InlineComment object instance - is the comment to be written on the same line: ment for short
-                        description of the specific instance. Default is empty comment
+    Attributes
+    ----------
+    name : str | int
+        the identity of the Serpent 2 entity.
+    comment : `SEAT.Comment`, optional
+        the comment to the Serpent entity. The default is SEAT.Comment('').
+    inline_comment : `SEAT.InlineComment`, optional
+        the comment to be written on the same line as the Serpent 2 entity id.
+        The default is SEAT.Comment('').
+
+    Methods
+    --------
+    assess :
+        prints the `SEAT.Entity` python id.
+    write :
+        writes the `SEAT.Entity` to a file.
+
     """
-    name: any
+    name: str | int
     comment: Comment = Comment('')
     inline_comment: InlineComment = InlineComment('')
 
@@ -238,15 +299,31 @@ class Entity:
         return string
 
     def assess(self):
+        """
+        Prints the `SEAT.Entity` python id.
+
+        Returns
+        -------
+        None.
+
+        """
         print(id(self))
 
     def write(self, file: str, mode: str='a'):
         """
-        Writes to a file
+        Writes the `SEAT.Entity.__str__()` to a file.
 
-        Takes:
-        ------
-        * `file`: string - is the name of the file where to write
+        Parameters
+        ----------
+        file : str
+            the name of the file where to write.
+        mode : str, optional
+            mode to open the file. The default is 'a'.
+
+        Returns
+        -------
+        None.
+
         """
         with open(file, mode=mode) as f:
             f.write(self.__str__())
@@ -255,33 +332,43 @@ class Entity:
 @dataclass(slots=True)
 class Other:
     """
-    Handles:
-    --------
-    Handles whatever Serpent 2 feature not implemented in this code yet
+    Object for not-yet-implemented Serpent 2 cards and entities.
 
-    Methods:
-    --------
-    * `write()`: internal method to write on a file with same formatting as in the instance definition
-    * `copy()`: copies the object instance to another memory allocation
+    Attributes
+    ----------
+    string : str
+        the Serpent 2 properly formatted string for the desired implementation.
 
-    Takes:
-    ------
-    * `string`: string - Serpent 2 properly formatted string for the desired implementation
+    Methods
+    -------
+    write :
+        writes the `SEAT.Other` instance to a file.
+    copy :
+        copies the object instance to another memory allocation.
+
     """
     string: str
 
     def __str__(self):
         return self.string
 
-    def write(self, file: str):
+    def write(self, file: str, mode: str='a'):
         """
-        Internal method to write on a file with same formatting as in the instance definition
+        Writes the `SEAT.Other` instance to a file.
 
-        Takes:
-        ------
-        * `file`: string - is the name of the file where to write
+        Parameters
+        ----------
+        file : str
+            name of the file to write to.
+        mode : str, optional
+            mode to open the file. The default is 'a'.
+
+        Returns
+        -------
+        None.
+
         """
-        with open(file, 'a') as f:
+        with open(file, mode=mode) as f:
             f.write(self.string)
 
     def copy(self):
@@ -290,6 +377,8 @@ class Other:
 
         Returns:
         --------
-        Returns a variable pointing to a new memory allocation
+        SEAT.Other
+            a copy of the `SEAT.Other` instance.
+
         """
         return cp.deepcopy(self)
