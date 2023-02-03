@@ -89,7 +89,7 @@ class MaterialComposition:
         return string
 
     @classmethod
-    def parse(cls, string: str, separator: str=None, **kwargs):
+    def parse(cls, string: str, *args, separator: str=None, **kwargs):
         """
         Reads the material composition from a string.
 
@@ -117,7 +117,7 @@ class MaterialComposition:
         return cls._from_list(string.split('\n'), separator, **kwargs)
 
     @classmethod
-    def _from_list(cls, lines: list[str], separator: str=None, **kwargs):
+    def _from_list(cls, lines: list[str], *args, separator: str=None, **kwargs):
         """
         Reads the material composition from a list of strings.
 
@@ -150,7 +150,7 @@ class MaterialComposition:
         return cls(components, **kwargs)
 
     @classmethod
-    def from_file(cls, file: str, separator: str=None, **kwargs):
+    def from_file(cls, file: str, *args, separator: str=None, **kwargs):
         """
         Reads the material composition from a file.
 
@@ -177,10 +177,10 @@ class MaterialComposition:
         """
         with open(file, 'r') as f:
             lines = f.readlines()
-        return cls._from_list(lines, separator, **kwargs)
+        return cls._from_list(lines, *args, separator=separator, **kwargs)
 
     @classmethod
-    def enriched_custom(cls, abundance: dict[str, float], enrichers: dict[str, float], **kwargs):
+    def enriched_custom(cls, abundance: dict[str, float], enrichers: dict[str, float], *args, **kwargs):
         """
         Creates the material composition from a custom abundance and an
         enrichment criterion.
@@ -221,10 +221,10 @@ class MaterialComposition:
             enrichers_ = enrichers
         else:
             raise Exception("The keys of the enrichers should be nuclides.")
-        return cls(enrich(abundance_, enrichers_), **kwargs)
+        return cls(enrich(abundance_, enrichers_), *args, **kwargs)
 
     @classmethod
-    def enriched(cls, base: str, **kwargs):
+    def enriched(cls, base: str, *args, **kwargs):
         """
         Enriches a natural material or a `SEAT.composites` item according to an
         enriching criterion.
@@ -237,6 +237,8 @@ class MaterialComposition:
         **kwargs :
             - atomic : bool
                 makes the material densities be interpreted as atomic or mass.
+                Set to True for consistency with the `SEAT.natural` and
+                `SEAT.composites` modules.
             - enrichers : dict[str, float]
                 * key: the symbol (`'Nn###'`) of the nuclides enriching the
                         material.
@@ -254,14 +256,14 @@ class MaterialComposition:
 
         """
         if base in dir(SEAT.natural):
-            return cls.enriched_custom(getattr(SEAT.natural, base), atomic=True, **kwargs)
+            return cls.enriched_custom(getattr(SEAT.natural, base), *args, atomic=True, **kwargs)
         elif base in dir(SEAT.composites):
-            return cls.enriched_custom(getattr(SEAT.composites, base), atomic=True, **kwargs)
+            return cls.enriched_custom(getattr(SEAT.composites, base), *args, atomic=True, **kwargs)
         else:
             raise Exception(f"{base} not found in the SEAT database.")
 
     @classmethod
-    def polluted_custom(cls, abundance: dict[str, float], pollutants: dict[str, float], **kwargs):
+    def polluted_custom(cls, abundance: dict[str, float], pollutants: dict[str, float], *args, **kwargs):
         """
         Creates the material composition from a custom abundance and a pollution
         criterion.
@@ -304,10 +306,10 @@ class MaterialComposition:
             pollutants_ = unfold_composite(pollutants)
         else:
             raise Exception("The keys of the pollutants should be nuclides.")
-        return cls(pollute(abundance_, pollutants_), **kwargs)
+        return cls(pollute(abundance_, pollutants_), *args, **kwargs)
 
     @classmethod
-    def polluted(cls, base: str, **kwargs):
+    def polluted(cls, base: str, *args, **kwargs):
         """
         Pollutes a natural material or a `SEAT.composites` item according to a
         pollution criterion.
@@ -320,6 +322,8 @@ class MaterialComposition:
         **kwargs :
             - atomic : bool
                 makes the material densities be interpreted as atomic or mass.
+                Set to True for consistency with the `SEAT.natural` and
+                `SEAT.composites` modules.
             - pollutants : dict[str, float]
                 * key: the symbol (`'Nn###'`) of the nuclides pollutant.
                 * value: the target isotopic abundance of the polluting nuclides.
@@ -336,14 +340,14 @@ class MaterialComposition:
 
         """
         if base in dir(SEAT.natural):
-            return cls.polluted_custom(getattr(SEAT.natural, base), atomic=True, **kwargs)
+            return cls.polluted_custom(getattr(SEAT.natural, base), *args, atomic=True, **kwargs)
         elif base in dir(SEAT.composites):
-            return cls.polluted_custom(getattr(SEAT.composites, base), atomic=True, **kwargs)
+            return cls.polluted_custom(getattr(SEAT.composites, base), *args, atomic=True, **kwargs)
         else:
             raise Exception(f"{base} not found in the SEAT database.")
 
     @classmethod
-    def natural(cls, element: str, **kwargs):
+    def natural(cls, element: str, *args, **kwargs):
         """
         Creates the material composition form natural abundances.
 
@@ -354,6 +358,8 @@ class MaterialComposition:
         **kwargs :
             - atomic : bool
                 makes the material densities be interpreted as atomic or mass.
+                Set to True for consistency with the `SEAT.natural` and
+                `SEAT.composites` modules.
 
         Returns
         -------
@@ -361,10 +367,10 @@ class MaterialComposition:
             the instance created by the classmethod.
 
         """
-        return cls(getattr(SEAT.natural, element), atomic=True, **kwargs)
+        return cls(getattr(SEAT.natural, element), *args, atomic=True, **kwargs)
 
     @classmethod
-    def predefined(cls, composite: str, **kwargs):
+    def predefined(cls, composite: str, *args, **kwargs):
         """
         Creates the material composition form those predefined in `SEAT.composites`.
 
@@ -375,6 +381,8 @@ class MaterialComposition:
         **kwargs :
             - atomic : bool
                 makes the material densities be interpreted as atomic or mass.
+                Set to True for consistency with the `SEAT.natural` and
+                `SEAT.composites` modules.
 
         Returns
         -------
@@ -383,10 +391,10 @@ class MaterialComposition:
 
         """
         
-        return cls.composite(getattr(SEAT.composites, composite), atomic=True, **kwargs)
+        return cls.composite(getattr(SEAT.composites, composite), *args, atomic=True, **kwargs)
 
     @classmethod
-    def composite(cls, elements: dict[str, float], **kwargs):
+    def composite(cls, elements: dict[str, float], *args, **kwargs):
         """
         Creates the material composition form elements.
 
@@ -405,10 +413,10 @@ class MaterialComposition:
             the instance created by the classmethod.
 
         """
-        return cls(unfold_composite(elements), **kwargs)
+        return cls(unfold_composite(elements), *args, **kwargs)
 
     @classmethod
-    def from_zam(cls, zam: dict[int, float], **kwargs):
+    def from_zam(cls, zam: dict[int, float], *args, **kwargs):
         """
         Creates material composition from a dictionary of ZAMs.
 
@@ -428,10 +436,10 @@ class MaterialComposition:
 
         """
         components = dict(zip([zam2nuclide(z) for z in zam.keys()], zam.values()))
-        return cls(components, **kwargs)
+        return cls(components, *args, **kwargs)
 
     @classmethod
-    def from_za(cls, za: dict[int, float], **kwargs):
+    def from_za(cls, za: dict[int, float], *args, **kwargs):
         """
         Creates material composition from a dictionary of ZAs.
 
@@ -450,12 +458,12 @@ class MaterialComposition:
             the instance created by the classmethod.
 
         """
-        instance = cls(za, **kwargs)
+        instance = cls(za, *args, **kwargs)
         instance._already_za = True
         return instance
 
     @classmethod
-    def from_sep_nuclides(cls, nuclides: dict[str, float], sep: str='', **kwargs):
+    def from_sep_nuclides(cls, nuclides: dict[str, float], *args, sep: str='', **kwargs):
         """
         Creates the material composition giving the `components.keys()` as (`Nn{sep}###`).
 
@@ -477,7 +485,7 @@ class MaterialComposition:
 
         """
         components = dict(zip([n.replace(sep, '') for n in nuclides.keys()], nuclides.values()))
-        return cls(components, **kwargs)
+        return cls(components, *args, **kwargs)
 
     @classmethod
     def from_output_file(cls, file: str):  # interaction with serpentTools missing
