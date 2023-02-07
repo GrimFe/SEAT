@@ -111,7 +111,7 @@ def plane_params(A: float=None, B: float=None, C: float=None, D: float=None,
         out = f"{A} {B} {C} {D}"
     elif A is None and B is None and C is None and D is None:
         # point-defined plane
-        if out == '': raise Exception("Excessive parameters passed.")
+        if out != '': raise Exception("Excessive parameters passed.")
         out = f"{c1[0]} {c1[1]} {c1[2]} {c2[0]} {c2[1]} {c2[2]} {c3[0]} {c3[1]} {c3[2]}"
     else:
         msg = "Insufficient parameters passed."

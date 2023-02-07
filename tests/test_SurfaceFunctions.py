@@ -25,9 +25,9 @@ class TestFunctions:
         assert sf.plane_params(self.A, self.B, self.C, self.D) == '0 1 2 3'
 
     def test_plane_params_points(self):
-        assert sf.plane_params((self.A, self.B, self.C),
-                               (self.D, self.E, self.F),
-                               (self.G, self.H, self.I)) == '0 1 2 3 4 5 6 7 8'
+        assert sf.plane_params(c1=(self.A, self.B, self.C),
+                               c2=(self.D, self.E, self.F),
+                               c3=(self.G, self.H, self.I)) == '0 1 2 3 4 5 6 7 8'
 
     def test_cylinder_params(self):
         assert sf._cylinder_params(self.A, self.B, self.C, self.D, self.E) == '1 2 0 3 4'
