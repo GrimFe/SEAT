@@ -77,12 +77,12 @@ class Test_Cell:
 
 
 class Test_Surface:
-    parameters = [0, 0, 21.5 / 2]
+    parameters = {'x0': 0, 'y0': 0, 'r': 21.5 / 2}
     surface = geometry.Surface(name=TEST_NAME, parameters=parameters)
 
     def test_str(self) -> None:
         assert self.surface.__str__() == "surf " + TEST_NAME + ' ' + self.surface.kind + ' ' + ' '.join(
-            str(i) for i in self.parameters) + '\n'
+            str(i) for i in self.parameters.values()) + '\n'
 
     def test_flip(self) -> None:
         surface_ = self.surface.copy()
@@ -91,9 +91,10 @@ class Test_Surface:
 
     def test_kind_kwarg(self) -> None:
         KIND = 'cylx'
-        surface_ = geometry.Surface(name=TEST_NAME, parameters=self.parameters, kind=KIND)
+        parameters_= {'y0': 0, 'z0': 0, 'r': 21.5 / 2}
+        surface_ = geometry.Surface(name=TEST_NAME, parameters=parameters_, kind=KIND)
         assert surface_.__str__() == "surf " + TEST_NAME + ' ' + KIND + ' ' + ' '.join(
-            str(i) for i in self.parameters) + '\n'
+            str(i) for i in self.parameters.values()) + '\n'
 
 
 class Test_Pin:
@@ -203,7 +204,7 @@ class Test_Geometry:
     r1, r2 = 0.1, None
     pin = geometry.Pin(name=UniverseNames.GEOMETRY_PIN, radi=[(material, r1), (external_material, r2)])
     p1, p2, p3 = 0, 0, r1
-    surface = geometry.Surface(name='SURFACE', parameters=[p1, p2, p3])
+    surface = geometry.Surface(name='SURFACE', parameters={'x0': p1, 'y0': p2, 'r': p3})
     cell = geometry.Cell(name=UniverseNames.GEOMETRY_CELL, father=father, delimiters=[surface], kind='material',
                          material=material)
     n_side_pins = 2

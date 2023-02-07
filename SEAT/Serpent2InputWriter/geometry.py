@@ -4,6 +4,7 @@ import numpy as np
 import copy as cp
 from SEAT.Serpent2InputWriter.base import Entity, reformat
 from SEAT.Serpent2InputWriter.composition import Material
+import SEAT.surface_functions as sf
 
 from dataclasses import dataclass, field
 
@@ -260,9 +261,9 @@ class Surface(Entity):
     inline_comment : `SEAT.InlineComment`, optional
         the comment to be written on the same line as the Serpent 2 entity id.
         The default is SEAT.Comment('').
-    parameters : list[float], optional
+    parameters : dict[float], optional
         the input parameters required by the type expressed by `kind`. The
-        default is [].
+        default is {}.
     kind : str, optional
         identifies the surface type. The default is 'sqc'.
     _operator: str, optional
@@ -280,19 +281,18 @@ class Surface(Entity):
         copies the object instance to another memory allocation.
 
     """
-    parameters: list[float] = field(default_factory=list)
+    parameters: dict[float] = field(default_factory=dict)
     kind: str = 'sqc'
     _operator: str = ''
 
     def __str__(self):
         string = self.comment.__str__()
-        string += f"surf {self.name} {self.kind}"
-        for p in self.parameters:
-            string += f" {p}"
+        string += f"surf {self.name} {self.kind} "
+        string += getattr(sf, self.kind + "_params")(**self.parameters)
         string += self.inline_comment.__str__()
         return string
 
-    def flip(self, ret=True):
+    def flip(self, ret: bool=True):
         """
         Method to apply '-' operator to the surface allowing the user to
         consider its complement. Flips the direction of the normal to the
