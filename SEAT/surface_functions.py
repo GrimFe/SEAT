@@ -4,7 +4,7 @@ Created on Tue Feb  7 14:11:04 2023
 
 @author: fgrimald
 """
-from SEAT.Serpent2InputWriter import reformat
+# from SEAT.Serpent2InputWriter import reformat
 
 def p_params(offset: float) -> str:
     """
@@ -171,7 +171,8 @@ def sqc_params(r: float=0, x0: float=0, y0: float=0, z0: float=None,
         the ordered parameters as Serpent2 formatted string.
 
     """
-    return _cylinder_params(r, x0, y0, z0, z1) + f" {s}"
+    s_ = f" {s}" if s is not None else ''
+    return _cylinder_params(r, x0, y0, z0, z1) + s_
 
 def cyl_params(r: float=0, x0: float=0, y0: float=0, z0: float=None,
                z1: float=None) -> str:
