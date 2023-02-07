@@ -38,7 +38,7 @@ def px_params(x: float) -> str:
         the ordered parameters as Serpent2 formatted string.
 
     """
-    p_params(x)
+    return p_params(x)
 
 def py_params(y: float) -> str:
     """
@@ -55,7 +55,7 @@ def py_params(y: float) -> str:
         the ordered parameters as Serpent2 formatted string.
 
     """
-    p_params(y)
+    return p_params(y)
 
 def pz_params(z: float) -> str:
     """
@@ -72,7 +72,7 @@ def pz_params(z: float) -> str:
         the ordered parameters as Serpent2 formatted string.
 
     """
-    p_params(z)
+    return p_params(z)
 
 def plane_params(A: float=None, B: float=None, C: float=None, D: float=None,
                  c1: tuple[float]=None, c2: tuple[float]=None, c3: tuple[float]=None) -> str:
@@ -112,7 +112,7 @@ def plane_params(A: float=None, B: float=None, C: float=None, D: float=None,
     elif A is None and B is None and C is None and D is None:
         # point-defined plane
         if out == '': raise Exception("Excessive parameters passed.")
-        out = reformat(c1, "(),") + reformat(c2, "(),") + reformat(c3, "(),")
+        out = f"{c1[0]} {c1[1]} {c1[2]} {c2[0]} {c2[1]} {c2[2]} {c3[0]} {c3[1]} {c3[2]}"
     else:
         msg = "Insufficient parameters passed."
         raise Exception(msg)
