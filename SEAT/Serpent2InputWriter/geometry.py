@@ -151,7 +151,7 @@ class NestedUniverse(Universe):
         out = []
         for uni in self:
             out.extend(uni.materials)
-        return out
+        return out if out != [] else [None]
 
     def nest_universe(self, uni: Universe):
         """
@@ -254,7 +254,8 @@ class Pin(Universe):
         Called iteratively in the nested universes.
 
         """
-        return [t[0] for t in self.radi]
+        out = [t[0] for t in self.radi]
+        return out if out != [] else [None]
 
 
 @dataclass(slots=True)
@@ -725,7 +726,7 @@ class Lattice(NestedUniverse):
         out = []
         for uni in self:
             out.extend(uni.materials)
-        return out
+        return out if out != [] else [None]
 
 
 @dataclass(slots=True)
