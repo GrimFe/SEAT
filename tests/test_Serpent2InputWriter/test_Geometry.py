@@ -255,12 +255,12 @@ class Test_Geometry:
     c1, c2 = 0, 0
     lattice = geometry.Lattice(name=UniverseNames.GEOMETRY_LATTICE, parameters=[0, 0, n_side_pins, n_side_pins, r1],
                                representation=representation)
-    geom = geometry.Geometry(pins=[pin], surfaces=[surface], cells=[cell], lattices=[lattice])
+    geom = geometry.Geometry(pins=[pin], surfaces=[surface], cells=[cell], cell_wraps=cw, lattices=[lattice])
 
     GEOMETRY_STRING = f"pin PIN\n{material.name} {r1}\n{external_material.name} \n\n" + \
                       f"surf {surface.name} sqc {p1} {p2} {p3}\n\n" + \
                       f"cell {cell.name} {father.name} {material.name}  {surface.name}\n\n" + \
-                      f"\ncell {cell.name}_ {father.name}_ {material.name}  {surface.name}\n\n" + \
+                      f"cell {cell.name}_ {father.name}_ {material.name}  {surface.name}\n\n" + \
                       f"lat {lattice.name} 1 {c1} {c2} {n_side_pins} {n_side_pins} {r1}\n" + \
                       f"{father.name} {father.name}\n{father.name} {father.name}\n\n"
 
