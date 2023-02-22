@@ -23,8 +23,8 @@ class Test_Universe:
     def test_str(self) -> None:
         assert self.uni.__str__() == TEST_COMMENT.__str__() + UniverseNames.UNIVERSE
 
-    def test_get_materials(self) -> None:
-        assert self.uni.get_materials() == [None]
+    def test_materials(self) -> None:
+        assert self.uni.materials == [None]
 
 
 class Test_NestedUniverse:
@@ -33,8 +33,8 @@ class Test_NestedUniverse:
     def test_str(self) -> None:
         assert self.uni.__str__() == TEST_COMMENT.__str__() + UniverseNames.NESTED_UNIVERSE
 
-    def test_get_materials(self) -> None:
-        assert self.uni.get_materials() == []
+    def test_materials(self) -> None:
+        assert self.uni.materials == [None]
 
     def test_nest_universe(self) -> None:
         extra_universe = geometry.Universe(name="Extra")
@@ -106,8 +106,8 @@ class Test_Pin:
     def test_str(self) -> None:
         assert self.pin.__str__() == self.TEST_PIN_STRING
 
-    def test_get_materials(self) -> None:
-        assert self.pin.get_materials() == [self.mat1, self.mat2, self.mat3]
+    def test_materials(self) -> None:
+        assert self.pin.materials == [self.mat1, self.mat2, self.mat3]
 
     def test_radi_kwarg(self) -> None:
         pin_ = geometry.Pin(name=UniverseNames.PIN + '_', comment=TEST_COMMENT,
@@ -165,7 +165,7 @@ class Test_LatticeRepresentation:
 
 
 class Test_Lattice:
-    simple_universe = geometry.Universe(name=UniverseNames.SUB_UNIVERSE, materials=[TEST_MATERIAL],
+    simple_universe = geometry.Universe(name=UniverseNames.SUB_UNIVERSE, _materials=[TEST_MATERIAL],
                                         comment=TEST_COMMENT)
     REPRESENTATION = geometry.LatticeRepresentation.from_rows([simple_universe, simple_universe], 2)
 
@@ -192,9 +192,9 @@ class Test_Lattice:
         assert np.alltrue(lattice.sub_universes == np.array([self.simple_universe] * 4))
         assert (lattice.sub_universes == np.array([self.simple_universe] * 4)).all()
 
-    def test_get_materials(self) -> None:
+    def test_materials(self) -> None:
         lattice = geometry.Lattice(name=UniverseNames.LATTICE2, representation=self.REPRESENTATION)
-        assert (lattice.get_materials() == np.array([TEST_MATERIAL] * 4)).all()
+        assert (lattice.materials == np.array([TEST_MATERIAL] * 4)).all()
 
 
 class Test_Geometry:

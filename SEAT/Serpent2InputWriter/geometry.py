@@ -42,8 +42,13 @@ class Universe(Entity):
     inline_comment : `SEAT.InlineComment`, optional
         the comment to be written on the same line as the Serpent 2 entity id.
         The default is SEAT.Comment('').
-    materials : list[`SEAT.Material`], optional
+    _materials : list[`SEAT.Material`], optional
         the materials in the universe. The default is [].
+
+    Properties:
+    -----------
+    materials : list[`SEAT.Material`] | [None]
+        the materials in the universe. [None] if no material is included.
 
     Methods
     -------
@@ -51,14 +56,11 @@ class Universe(Entity):
         prints the `SEAT.Universe` python id.
     write :
         writes the `SEAT.Universe` to a file.
-    get_materials :
-        lists the materials in the Universe.
 
     """
-    materials: list[str] = field(default_factory=list)
+    _materials: list[Material] = field(default_factory=list[Material])
 
     def __post_init__(self):
-        self.materials = self.materials if self.materials else [None]  # is this really needed?
         global UniversesIncluded
         if self.name not in UniversesIncluded.keys():
             UniversesIncluded[self.name] = self
@@ -69,21 +71,22 @@ class Universe(Entity):
         string = self.comment.__str__() + f"{self.name}"
         return string
 
-    def get_materials(self) -> list[Material]:
+    @property
+    def materials(self) -> list[Material]:
         """
         Lists the materials in the universe.
 
         Returns
         -------
-        list[`SEAT.Material`]
-            the materials in the universe.
+        list[`SEAT.Material`] | [None]
+            the materials in the universe. [None] if no material is included.
 
         Note
         ----
         Called iteratively in the nested universes.
 
         """
-        return self.materials
+        return self._materials if self._materials else [None]
 
 
 @dataclass(slots=True)
@@ -101,10 +104,15 @@ class NestedUniverse(Universe):
     inline_comment : `SEAT.InlineComment`, optional
         the comment to be written on the same line as the Serpent 2 entity id.
         The default is SEAT.Comment('').
-    materials : list[`SEAT.Material`], optional
+    _materials : list[`SEAT.Material`], optional
         the materials in the universe. The default is [].
     daughters : list[Universe], optional
         the universes nested in the universe.
+
+    Properties:
+    -----------
+    materials : list[`SEAT.Material`] | [None]
+        the materials in the universe. [None] if no material is included.
 
     Methods
     -------
@@ -112,8 +120,6 @@ class NestedUniverse(Universe):
         prints the `SEAT.NestedUniverse` python id.
     write :
         writes the `SEAT.NestedUniverse` to a file.
-    get_materials :
-        lists with the materials in the universe.
     nest_universe :
         adds a Universe-like object to the nested universe.
 
@@ -127,14 +133,15 @@ class NestedUniverse(Universe):
         string = self.comment.__str__() + f"{self.name}"
         return string
 
-    def get_materials(self) -> list:
+    @property
+    def materials(self) -> list[Material]:
         """
         Lists the materials in the nested universe.
 
         Returns
         -------
-        list[`SEAT.Material`]
-            the materials in the nested universe.
+        list[`SEAT.Material`] | [None]
+            the materials in the universe. [None] if no material is included.
 
         Note
         ----
@@ -143,8 +150,8 @@ class NestedUniverse(Universe):
         """
         out = []
         for uni in self:
-            out.extend(uni.get_materials())
-        return out
+            out.extend(uni.materials)
+        return out if out != [] else [None]
 
     def nest_universe(self, uni: Universe):
         """
@@ -181,11 +188,16 @@ class Pin(Universe):
     inline_comment : `SEAT.InlineComment`, optional
         the comment to be written on the same line as the Serpent 2 entity id.
         The default is SEAT.Comment('').
-    materials : list[`SEAT.Material`], optional
+    _materials : list[`SEAT.Material`], optional
         the materials in the universe. The default is [].
     radi : list[tuple[`SEAT.Material`, float]], optional
         couples the Material and its radius (0 or `None` for external material).
         The default is [].
+
+    Properties:
+    -----------
+    materials : list[`SEAT.Material`] | [None]
+        the materials in the universe. [None] if no material is included.
 
     Methods:
     --------
@@ -193,8 +205,6 @@ class Pin(Universe):
         prints the `SEAT.Pin` python id.
     write :
         writes the `SEAT.Pin` to a file.
-    get_materials :
-        lists the materials in the Pin.
 
     Class methods:
     --------------
@@ -202,7 +212,7 @@ class Pin(Universe):
         creates the Pin from a dictionary coupling Material and radius.
 
     """
-    radi: list[tuple[Material, float]] = field(default_factory=list)
+    radi: list[tuple[Material, float]] = field(default_factory=list[tuple[Material, float]])
 
     def __str__(self):
         string = self.comment.__str__() + f"pin {self.name}" + self.inline_comment.__str__()
@@ -229,21 +239,23 @@ class Pin(Universe):
         """
         return cls([(k, v) for k, v in radi.items()], *args, **kwargs)
 
-    def get_materials(self) -> list[Material]:
+    @property
+    def materials(self) -> list[Material]:
         """
         Lists the materials in the pin.
 
         Returns
         -------
-        list[`SEAT.Material`]
-            the materials in the pin.
+        list[`SEAT.Material`] | [None]
+            the materials in the pin. [None] if no material is included.
 
         Note
         ----
         Called iteratively in the nested universes.
 
         """
-        return [t[0] for t in self.radi]
+        out = [t[0] for t in self.radi]
+        return out if out != [] else [None]
 
 
 @dataclass(slots=True)
@@ -377,15 +389,13 @@ class Cell(Entity):
         prints the `SEAT.Entity` python id.
     write :
         writes the `SEAT.Entity` to a file.
-    get_materials :
-        lists the materials in the Cell.
     _nest_to_father :
         nest the Cell to the father nested universe.
 
     """
 
     delimiters: list[Surface] = field(default_factory=list)
-    father: NestedUniverse = None  # required
+    father: NestedUniverse = None
     kind: str = 'outside'
     filler: Universe | None = None
     material: Material | None = None
@@ -427,11 +437,11 @@ class Cell(Entity):
             try:
                 UniversesIncluded[self.father.name].nest_universe(
                     Universe(name=f'{self.father.name}.{self.material.name}',
-                             materials=[self.material]))
+                             _materials=[self.material]))
             except ExistingUniverse:
                 UniversesIncluded[self.father.name].nest_universe(
                     Universe(name=f'{self.father.name}.{self.material.name}{sub_universe_number}',
-                             materials=[self.material]))
+                             _materials=[self.material]))
         else:  # is the exception needed here as well?
             UniversesIncluded[self.father.name].nest_universe(Universe(name=f'{self.father.name}.{None}'))
 
@@ -634,7 +644,7 @@ class Lattice(NestedUniverse):
     inline_comment : `SEAT.InlineComment`, optional
         the comment to be written on the same line as the Serpent 2 entity id.
         The default is SEAT.Comment('').
-    materials : list[`SEAT.Material`], optional
+    _materials : list[`SEAT.Material`], optional
         the materials in the universe. The default is [].
     daughters : list[Universe], optional
         the universes nested in the universe.
@@ -654,8 +664,10 @@ class Lattice(NestedUniverse):
 
     Properties
     ----------
-    sub_universes :
+    sub_universes : `numpy.array`
         the universes composing the lattice.
+    materials : list[`SEAT.Material`] | [None]
+            the materials in the lattice. [None] if no material is included.
 
     Methods
     -------
@@ -663,8 +675,6 @@ class Lattice(NestedUniverse):
         prints the `SEAT.Lattice` python id.
     write :
         writes the `SEAT.Lattice` to a file.
-    get_materials :
-        lists with the materials in the universe.
     nest_universe :
         adds a Universe-like object to the nested universe.
 
@@ -698,14 +708,15 @@ class Lattice(NestedUniverse):
         string += self.representation.__str__()
         return string
 
-    def get_materials(self) -> list[Material]:
+    @property
+    def materials(self) -> list[Material]:
         """
         Lists the materials in the Lattice.
 
         Returns
         -------
-        list[`SEAT.Material`]
-            the materials in the Lattice.
+       list[`SEAT.Material`] | [None]
+           the materials in the lattice. [None] if no material is included
 
         Note
         ----
@@ -714,8 +725,8 @@ class Lattice(NestedUniverse):
         """
         out = []
         for uni in self:
-            out.extend(uni.get_materials())
-        return out
+            out.extend(uni.materials)
+        return out if out != [] else [None]
 
 
 @dataclass(slots=True)
