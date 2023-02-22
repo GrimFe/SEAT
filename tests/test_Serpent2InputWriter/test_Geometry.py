@@ -165,7 +165,7 @@ class Test_LatticeRepresentation:
 
 
 class Test_Lattice:
-    simple_universe = geometry.Universe(name=UniverseNames.SUB_UNIVERSE, materials=[TEST_MATERIAL],
+    simple_universe = geometry.Universe(name=UniverseNames.SUB_UNIVERSE, _materials=[TEST_MATERIAL],
                                         comment=TEST_COMMENT)
     REPRESENTATION = geometry.LatticeRepresentation.from_rows([simple_universe, simple_universe], 2)
 
