@@ -188,7 +188,7 @@ class MaterialComposition:
         Parameters
         ----------
         abundance : dict[str, float]
-            * key: the symbol of the nuclides (`'Nn###'`) or elements (`''Nn`)
+            * key: the symbol of the nuclides (`'Nn###'`) or elements (`'Nn'`)
                     in the reference material.
             * value: the abundance of each nuclide or element.
         enrichers : dict[str, float]
@@ -900,6 +900,10 @@ class Material(Entity):
             kind = 'tft'
             number += 1
         string = "More than one temperature type" if number > 1 else "No temperature type"
+        # Actually, if number == 0, no temperature specificatio was given, which
+        # is allowed in Serpent. One could then think of unifying get_temperature
+        # and get_temperature_kind in format_temperature, which would return a
+        # string with kind and temperature or empty if no kind is given.
         if number != 1:
             raise Exception(string + f' was given to Material {self.name}')
         return kind
