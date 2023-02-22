@@ -15,6 +15,7 @@ __all__ = [
     "Pin",
     "Surface",
     "Cell",
+    "CellWrap",
     "LatticeRepresentation",
     "Lattice",
     "Geometry"
@@ -464,13 +465,15 @@ class CellWrap(Universe):
         The default is SEAT.Comment('').
     _materials : list[`SEAT.Material`], optional
         the materials in the universe. The default is [].
-    cells : list[`SEAT.Cell`], optional
+    _cells : list[`SEAT.Cell`], optional
         the list of cells wrapepd in the father universe. The default is [].
 
     Properties:
     -----------
     materials : list[`SEAT.Material`] | [None]
         the materials in the universe. [None] if no material is included.
+    cells : list[`SEAT.Cell`]
+        the list of cells wrapepd in the father universe properly nested.
 
     Methods
     -------
@@ -480,17 +483,34 @@ class CellWrap(Universe):
         writes the `SEAT.Universe` to a file.
 
     """
-    cells: list[Cell] = []
+    _cells: list[Cell] = field(default_factory=list[Cell])
+
+    def __post_init__(self):
+        global UniversesIncluded
+        if self.name not in UniversesIncluded.keys():
+            UniversesIncluded[self.name] = self
+        else:
+            raise ExistingUniverse(f'Universe named {self.name} already exists.')
+        self._update_cell_father()
 
     def __iter__(self):
         return self.cells.__iter__()
 
     def __str__(self):
-        string = self.comment
-        string += self.inline_comment
+        string = self.comment.__str__()
+        string += self.inline_comment.__str__()
         for c in self:
             string += c.__str__()
         return string + '\n'
+
+    def _update_cell_father(self):
+        for cell in self._cells:
+            cell.father = UniversesIncluded[self.name]
+
+    @property
+    def cells(self) -> list[Cell]:
+        self._update_cell_father()
+        return self._cells
 
     @property
     def materials(self) -> list[Material]:
@@ -509,7 +529,7 @@ class CellWrap(Universe):
         """
         out = []
         for c in self:
-            out.extend(c.materials)
+            out.append(c.material)
         return out if out != [] else [None]
 
     def append(self, item: Cell):
@@ -526,8 +546,7 @@ class CellWrap(Universe):
         None.
 
         """
-        item.father = UniversesIncluded[self.name]
-        self.cells.append(item)
+        self._cells.append(item)
 
     def extend(self, items: list[Cell]):
         """
@@ -543,9 +562,7 @@ class CellWrap(Universe):
         None.
 
         """
-        for item in items:
-            item.father = UniversesIncluded[self.name]
-        self.cells.extend(items)
+        self._cells.extend(items)
 
 
 @dataclass(slots=True)
