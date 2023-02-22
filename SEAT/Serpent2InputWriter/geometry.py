@@ -437,11 +437,11 @@ class Cell(Entity):
             try:
                 UniversesIncluded[self.father.name].nest_universe(
                     Universe(name=f'{self.father.name}.{self.material.name}',
-                             materials=[self.material]))
+                             _materials=[self.material]))
             except ExistingUniverse:
                 UniversesIncluded[self.father.name].nest_universe(
                     Universe(name=f'{self.father.name}.{self.material.name}{sub_universe_number}',
-                             materials=[self.material]))
+                             _materials=[self.material]))
         else:  # is the exception needed here as well?
             UniversesIncluded[self.father.name].nest_universe(Universe(name=f'{self.father.name}.{None}'))
 
