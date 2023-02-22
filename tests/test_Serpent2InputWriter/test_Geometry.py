@@ -76,6 +76,40 @@ class Test_Cell:
         assert cell.__str__() == str_flip
 
 
+class Test_CellWrap:
+    SURFACE_NAME = 'DELIMITER'
+
+    father = geometry.NestedUniverse(name=UniverseNames.FATHER_UNIVERSE + '_wrap')
+    filler = geometry.Universe(name=UniverseNames.DAUGHTER_UNIVERSE + '_wrap')
+
+    parameters = [0, 0, 21.5 / 2]
+    delimiter = geometry.Surface(name=SURFACE_NAME, parameters=parameters)
+
+    cell_m = geometry.Cell(name=UniverseNames.CELL_MAT + '_wrap', kind='material',
+                           material=TEST_MATERIAL, delimiters=[delimiter])
+    cell_u = geometry.Cell(name=UniverseNames.CELL_UNI + '_wrap', kind='fill',
+                         filler=filler, delimiters=[delimiter])
+
+    cw = geometry.CellWrap(UniverseNames.CELL_WRAP, _cells = [cell_m, cell_u])
+    cw_ = geometry.CellWrap(UniverseNames.CELL_WRAP + '_')
+
+    def test_str(self):
+        assert self.cw.__str__() == '\n' + self.cell_m.__str__() + self.cell_u.__str__() + '\n'
+
+    def test_materials(self) -> None:
+        assert self.cw.materials == [TEST_MATERIAL, None]
+
+    def test_append(self) -> None:
+        self.cw_.append(self.cell_m)
+        assert self.cw_.cells == [self.cell_m]
+        assert self.cw_.cells[0] is self.cell_m
+
+    def test_extend(self) -> None:
+        self.cw_.extend([self.cell_u])
+        assert self.cw_.cells == [self.cell_m, self.cell_u]
+        assert self.cw_.cells[0] is self.cell_m
+        assert self.cw_.cells[1] is self.cell_u
+
 class Test_Surface:
     parameters = {'x0': 0, 'y0': 0, 'r': 21.5 / 2}
     surface = geometry.Surface(name=TEST_NAME, parameters=parameters)
@@ -202,21 +236,31 @@ class Test_Geometry:
     material = Material(name='TEST_MATERIAL')
     external_material = Material(name='EXTERNAL')
     r1, r2 = 0.1, None
-    pin = geometry.Pin(name=UniverseNames.GEOMETRY_PIN, radi=[(material, r1), (external_material, r2)])
+    pin = geometry.Pin(name=UniverseNames.GEOMETRY_PIN,
+                       radi=[(material, r1), (external_material, r2)])
     p1, p2, p3 = 0, 0, r1
-    surface = geometry.Surface(name='SURFACE', parameters={'x0': p1, 'y0': p2, 'r': p3})
-    cell = geometry.Cell(name=UniverseNames.GEOMETRY_CELL, father=father, delimiters=[surface], kind='material',
+    surface = geometry.Surface(name='SURFACE',
+                               parameters={'x0': p1, 'y0': p2, 'r': p3})
+    cell = geometry.Cell(name=UniverseNames.GEOMETRY_CELL, father=father,
+                         delimiters=[surface], kind='material',
                          material=material)
+    cell_ = geometry.Cell(name=cell.name + '_',
+                          delimiters=[surface], kind='material',
+                          material=material)
+    cw = geometry.CellWrap(father.name + '_')
+    cw.append(cell_)
+
     n_side_pins = 2
     representation = geometry.LatticeRepresentation.from_cartesian(shape=(n_side_pins, n_side_pins), filler=father)
     c1, c2 = 0, 0
     lattice = geometry.Lattice(name=UniverseNames.GEOMETRY_LATTICE, parameters=[0, 0, n_side_pins, n_side_pins, r1],
                                representation=representation)
-    geom = geometry.Geometry(pins=[pin], surfaces=[surface], cells=[cell], lattices=[lattice])
+    geom = geometry.Geometry(pins=[pin], surfaces=[surface], cells=[cell], cell_wraps=cw, lattices=[lattice])
 
     GEOMETRY_STRING = f"pin PIN\n{material.name} {r1}\n{external_material.name} \n\n" + \
                       f"surf {surface.name} sqc {p1} {p2} {p3}\n\n" + \
                       f"cell {cell.name} {father.name} {material.name}  {surface.name}\n\n" + \
+                      f"cell {cell.name}_ {father.name}_ {material.name}  {surface.name}\n\n" + \
                       f"lat {lattice.name} 1 {c1} {c2} {n_side_pins} {n_side_pins} {r1}\n" + \
                       f"{father.name} {father.name}\n{father.name} {father.name}\n\n"
 
