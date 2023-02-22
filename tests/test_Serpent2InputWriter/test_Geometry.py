@@ -79,15 +79,15 @@ class Test_Cell:
 class Test_CellWrap:
     SURFACE_NAME = 'DELIMITER'
 
-    father = geometry.NestedUniverse(name=UniverseNames.FATHER_UNIVERSE)
-    filler = geometry.Universe(name=UniverseNames.DAUGHTER_UNIVERSE)
+    father = geometry.NestedUniverse(name=UniverseNames.FATHER_UNIVERSE + '_wrap')
+    filler = geometry.Universe(name=UniverseNames.DAUGHTER_UNIVERSE + '_wrap')
 
     parameters = [0, 0, 21.5 / 2]
     delimiter = geometry.Surface(name=SURFACE_NAME, parameters=parameters)
 
-    cell_m = geometry.Cell(name=UniverseNames.CELL_MAT, kind='material',
+    cell_m = geometry.Cell(name=UniverseNames.CELL_MAT + '_wrap', kind='material',
                            material=TEST_MATERIAL, delimiters=[delimiter])
-    cell_u = geometry.Cell(name=UniverseNames.CELL_UNI, kind='fill',
+    cell_u = geometry.Cell(name=UniverseNames.CELL_UNI + '_wrap', kind='fill',
                          filler=filler, delimiters=[delimiter])
 
     cw = geometry.CellWrap(UniverseNames.CELL_WRAP, _cells = [cell_m, cell_u])
