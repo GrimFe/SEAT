@@ -10,16 +10,16 @@ import SEAT.surface_functions as sf
 class TestFunctions:
     A, B, C, D, E, F, G, H, I = range(9)
     def test_p_params(self):
-        assert sf.p_params(self.A) == '0'
+        assert sf._p_params(self.A) == '0'
 
     def test_px_params(self):
-        assert sf.p_params(self.A) == '0'
+        assert sf.px_params(self.A) == '0'
 
     def test_py_params(self):
-        assert sf.p_params(self.A) == '0'
+        assert sf.py_params(self.A) == '0'
 
     def test_pz_params(self):
-        assert sf.p_params(self.A) == '0'
+        assert sf.pz_params(self.A) == '0'
 
     def test_plane_params_equaiton(self):
         assert sf.plane_params(self.A, self.B, self.C, self.D) == '0 1 2 3'
