@@ -401,7 +401,8 @@ class Cell(Entity):
     material: Material | None = None
 
     def __post_init__(self):
-        self._nest_to_father()
+        if self.father is not None:
+            self._nest_to_father()
 
     def __str__(self):
         string = self.comment.__str__()
@@ -444,6 +445,107 @@ class Cell(Entity):
                              _materials=[self.material]))
         else:  # is the exception needed here as well?
             UniversesIncluded[self.father.name].nest_universe(Universe(name=f'{self.father.name}.{None}'))
+
+
+@dataclass(slots=True)
+class CellWrap(Universe):
+    """
+    Wrapper of cells handling the nesting to a common father universe.
+    Inhertis from `SEAT.Universe`.
+
+    Attributes
+    ----------
+    name : str | int
+        the identity of the Serpent 2 entity.
+    comment : `SEAT.Comment`, optional
+        the comment to the Serpent entity. The default is SEAT.Comment('').
+    inline_comment : `SEAT.InlineComment`, optional
+        the comment to be written on the same line as the Serpent 2 entity id.
+        The default is SEAT.Comment('').
+    _materials : list[`SEAT.Material`], optional
+        the materials in the universe. The default is [].
+    cells : list[`SEAT.Cell`], optional
+        the list of cells wrapepd in the father universe. The default is [].
+
+    Properties:
+    -----------
+    materials : list[`SEAT.Material`] | [None]
+        the materials in the universe. [None] if no material is included.
+
+    Methods
+    -------
+    assess :
+        prints the `SEAT.Universe` python id.
+    write :
+        writes the `SEAT.Universe` to a file.
+
+    """
+    cells: list[Cell] = []
+
+    def __iter__(self):
+        return self.cells.__iter__()
+
+    def __str__(self):
+        string = self.comment
+        string += self.inline_comment
+        for c in self:
+            string += c.__str__()
+        return string + '\n'
+
+    @property
+    def materials(self) -> list[Material]:
+        """
+        Lists the materials in the wrapped cells.
+
+        Returns
+        -------
+       list[`SEAT.Material`] | [None]
+           the materials in the wrapper. [None] if no material is included
+
+        Note
+        ----
+        Called iteratively in the nested universes.
+
+        """
+        out = []
+        for c in self:
+            out.extend(c.materials)
+        return out if out != [] else [None]
+
+    def append(self, item: Cell):
+        """
+        Appends a cell to the wrapper.
+
+        Parameters
+        ----------
+        item : `SEAT.Cell`
+            the cell to add to the wrapper.
+
+        Returns
+        -------
+        None.
+
+        """
+        item.father = UniversesIncluded[self.name]
+        self.cells.append(item)
+
+    def extend(self, items: list[Cell]):
+        """
+        Appends a cell to the wrapper.
+
+        Parameters
+        ----------
+        items : list[`SEAT.Cell`]
+            the cells to exted the wrapper with.
+
+        Returns
+        -------
+        None.
+
+        """
+        for item in items:
+            item.father = UniversesIncluded[self.name]
+        self.cells.extend(items)
 
 
 @dataclass(slots=True)
@@ -745,7 +847,10 @@ class Geometry:
     surfaces : list[`SEAT.Surface`], optional
         the surfaces in the geometry. The default is [].
     cells : list[`SEAT.Cell`], optional
-        the cells in the geometry. The default is [].
+        the cells in the geometry not inlcuded in `cell_wraps`.
+        The default is [].
+    cell_wraps : list[`SEAT.CellWrap`], optional
+        the cell wraps in the geometry. The default is [].
     lattices : list[`SEAT.Lattice`], optional
         the lattices in the geometry. The default is [].
 
@@ -754,11 +859,16 @@ class Geometry:
     write :
         writes the `SEAT.Geometry` to a file.
 
+    Note
+    ----
+    The suggested use is with cell wraps.
+
     """
-    pins: list[Pin] = field(default_factory=list)
-    surfaces: list[Surface] = field(default_factory=list)
-    cells: list[Cell] = field(default_factory=list)
-    lattices: list[Lattice] = field(default_factory=list)
+    pins: list[Pin] = field(default_factory=list[Pin])
+    surfaces: list[Surface] = field(default_factory=list[Surface])
+    cells: list[Cell] = field(default_factory=list[Cell])
+    cell_wraps: list[CellWrap] = field(default_factory=list[CellWrap])
+    lattices: list[Lattice] = field(default_factory=list[Lattice])
 
     def __str__(self):
         string = ''
@@ -769,6 +879,9 @@ class Geometry:
         string += '\n'
         for c in self.cells:
             string += c.__str__()
+        string += '\n'
+        for cw in self.cell_wraps:
+            string += cw.__str__()
         string += '\n'
         for ll in self.lattices:
             string += ll.__str__()
