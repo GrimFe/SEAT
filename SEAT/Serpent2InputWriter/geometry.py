@@ -56,8 +56,6 @@ class Universe(Entity):
         prints the `SEAT.Universe` python id.
     write :
         writes the `SEAT.Universe` to a file.
-    get_materials :
-        lists the materials in the Universe.
 
     """
     _materials: list[Material] = field(default_factory=list[Material])
@@ -122,8 +120,6 @@ class NestedUniverse(Universe):
         prints the `SEAT.NestedUniverse` python id.
     write :
         writes the `SEAT.NestedUniverse` to a file.
-    get_materials :
-        lists with the materials in the universe.
     nest_universe :
         adds a Universe-like object to the nested universe.
 
@@ -209,8 +205,6 @@ class Pin(Universe):
         prints the `SEAT.Pin` python id.
     write :
         writes the `SEAT.Pin` to a file.
-    get_materials :
-        lists the materials in the Pin.
 
     Class methods:
     --------------
@@ -394,8 +388,6 @@ class Cell(Entity):
         prints the `SEAT.Entity` python id.
     write :
         writes the `SEAT.Entity` to a file.
-    get_materials :
-        lists the materials in the Cell.
     _nest_to_father :
         nest the Cell to the father nested universe.
 
@@ -682,8 +674,6 @@ class Lattice(NestedUniverse):
         prints the `SEAT.Lattice` python id.
     write :
         writes the `SEAT.Lattice` to a file.
-    get_materials :
-        lists with the materials in the universe.
     nest_universe :
         adds a Universe-like object to the nested universe.
 

@@ -676,7 +676,7 @@ class Simulation:
         strings = []
         divisions = []
         for lat in self.geometry.lattices:
-            for mat in lat.get_materials():
+            for mat in lat.materials:
                 if mat is not None and mat.division_string != '':
                     strings.append(mat.division_string)
                     divisions.extend(mat.divisions)
