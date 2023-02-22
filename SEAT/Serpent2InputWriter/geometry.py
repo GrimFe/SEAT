@@ -265,7 +265,18 @@ class Surface(Entity):
         the input parameters required by the type expressed by `kind`. The
         default is {}.
     kind : str, optional
-        identifies the surface type. The default is 'sqc'.
+        identifies the surface type.
+        Allowed `kind` values are:
+            - 'cyl': z-cylinder.
+            - 'cylx': x-cylinder.
+            - 'cyly': y-cylinder.
+            - 'cylz': z-cylinder.
+            - 'plane': custom plane (equation or 3 points).
+            - 'px': x-perpendicular plane.
+            	- 'py': y-perpendicular plane.
+            - 'pz': x-perpendicular plane.
+            - 'sqc': squared cylinder.
+        The default is 'sqc'.
     _operator: str, optional
         the surface oprator. The default is ''.
 
@@ -350,7 +361,8 @@ class Cell(Entity):
         identifies the cell type.
         Allowed `kind` values are:
             - 'fill': to fill the cell with a universe.
-            - 'material': to fill the cell with a material; requires passing material to the Cell.
+            - 'material': to fill the cell with a material; requires passing
+                        material to the Cell.
             - 'outside': to define outside cells.
         The default is 'outside'.
     filler : `SEAT.Universe`

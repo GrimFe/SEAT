@@ -6,7 +6,7 @@ Created on Tue Feb  7 14:11:04 2023
 """
 # from SEAT.Serpent2InputWriter import reformat
 
-def p_params(offset: float) -> str:
+def _p_params(offset: float) -> str:
     """
     Formats the parameters for a plane surface.
 
@@ -38,7 +38,7 @@ def px_params(x: float) -> str:
         the ordered parameters as Serpent2 formatted string.
 
     """
-    return p_params(x)
+    return _p_params(x)
 
 def py_params(y: float) -> str:
     """
@@ -55,7 +55,7 @@ def py_params(y: float) -> str:
         the ordered parameters as Serpent2 formatted string.
 
     """
-    return p_params(y)
+    return _p_params(y)
 
 def pz_params(z: float) -> str:
     """
@@ -72,7 +72,7 @@ def pz_params(z: float) -> str:
         the ordered parameters as Serpent2 formatted string.
 
     """
-    return p_params(z)
+    return _p_params(z)
 
 def plane_params(A: float=None, B: float=None, C: float=None, D: float=None,
                  c1: tuple[float]=None, c2: tuple[float]=None, c3: tuple[float]=None) -> str:
