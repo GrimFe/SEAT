@@ -129,12 +129,28 @@ class DivisionWriter:
             the division string to write to the simulation.
 
         """
-        string = reformat(str(set(self.strings)), "{}'").replace(', ', '\n') + '\n'
-        if None not in self.divisions:
+        string = ''
+        if not self.empty:
+            string = reformat(str(set(self.strings)), "{}'").replace(', ', '\n')  # is the cast to set really needed? 'set' should also be removed form the string
             string += '\n'
-            string += "set mvol\n\n"
-            string += self.divisions.format_sort()
+            if None not in self.divisions:
+                string += '\n'
+                string += "set mvol\n\n"
+                string += self.divisions.format_sort()
         return string
+
+    @property
+    def empty(self) -> bool:
+        """
+        Assess whether there are elements in the DivisionWriter.
+
+        Returns
+        -------
+        bool
+            True if the DivisionWriter is empty.
+
+        """
+        return not bool(self.strings)
 
 
 @dataclass(slots=True)

@@ -611,8 +611,9 @@ class LatticeRepresentation:
     --------------
     from_cartesian :
         creates lattice from cartesian coordinate representation.
-    from_rows : 
-        creates the lattice representation from matrix rows.
+    from_full_rows :
+        creates the lattice representation from a list of universes to fill the
+        matrix rows with.
     merge :
         creates the lattice representation merging several representations.
 
@@ -679,10 +680,11 @@ class LatticeRepresentation:
         return cls(out)
 
     @classmethod
-    def from_rows(cls, universes: list[Universe], length):
+    def from_full_rows(cls, universes: list[Universe], length):
         """
         Creates the lattice representation from the rows of matrix in which
         each element is the same universe.
+        Takes the elements in `universes` and multiplies them by the `length`.
 
         Parameters
         ----------
