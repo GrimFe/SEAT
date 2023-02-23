@@ -199,18 +199,18 @@ class Test_Material:
         mat = composition.Material.mix(name=TEST_NAME, materials=[(mat1, c1), (mat2, c2)])
         assert mat.__str__() == f"""mix {TEST_NAME}\n{mat1.name} {c1}\n{mat2.name} {c2}\n\n\n"""
 
-    def test_get_temperature(self) -> None:
+    def test_temperature(self) -> None:
         mat = composition.Material(name=TEST_NAME, tms=self.TEMPERATURE)
-        assert mat.get_temperature() == str(self.TEMPERATURE)
+        assert mat.temperature == str(self.TEMPERATURE)
         mat = composition.Material(name=TEST_NAME, tmp=self.TEMPERATURE)
-        assert mat.get_temperature() == str(self.TEMPERATURE)
+        assert mat.temperature == str(self.TEMPERATURE)
         mat = composition.Material(name=TEST_NAME, tft=(self.TEMPERATURE, self.TEMPERATURE))
-        assert mat.get_temperature() == f'{self.TEMPERATURE} {self.TEMPERATURE}'
+        assert mat.temperature == f'{self.TEMPERATURE} {self.TEMPERATURE}'
 
-    def test_get_temperature_kind(self) -> None:
+    def test_temperature_kind(self) -> None:
         mat = composition.Material(name=TEST_NAME, dens=self.DENSITY, representation=self.REPRESENTATION, burn=True,
                                    tft=(self.TEMPERATURE, self.TEMPERATURE))
-        assert mat.get_temperature_kind() == 'tft'
+        assert mat.temperature_kind == 'tft'
 
     def test_divide(self) -> None:
         pass
