@@ -611,8 +611,8 @@ class LatticeRepresentation:
     --------------
     from_cartesian :
         creates lattice from cartesian coordinate representation.
-    from_rows : 
-        creates the lattice representation from matrix rows.
+    from_multiple: 
+        creates the lattice representation multiplying a list of universes.
     merge :
         creates the lattice representation merging several representations.
 
