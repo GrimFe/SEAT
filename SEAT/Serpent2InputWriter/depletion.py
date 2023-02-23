@@ -115,7 +115,7 @@ class Interval:
     """
     span: float
     total: bool = False
-    span_type: str = 'day'
+    kind: str = 'day'
 
     @property
     def step(self) -> str:
@@ -132,7 +132,7 @@ class Interval:
         return step_
 
     def __str__(self):
-        string = f"dep {self.span_type}{self.step} {self.span}\n"
+        string = f"dep {self.kind}{self.step} {self.span}\n"
         return string
 
     def write(self, file: str, mode: str='a'):

@@ -13,7 +13,7 @@ class Test_Interval:
         assert self.interval.step == 'step'
 
     def test_str(self) -> None:
-        assert self.interval.__str__() == f'dep {self.interval.span_type}{self.interval.step} {self.interval.span}\n'
+        assert self.interval.__str__() == f'dep {self.interval.kind}{self.interval.step} {self.interval.span}\n'
 
 
 class Test_Normalisation:
