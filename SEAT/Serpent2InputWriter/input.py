@@ -530,9 +530,10 @@ class Simulation:
             the formatted particle population.
 
         """
-        pop = f"{self.population['particles']} {self.population['generations']} {self.population['inactive']} " \
-              f"{self.population['k_guess']} {self.population['batch_interval']} {self.population['parallel']}\n"
-        return 'set pop ' + pop
+        pop = POPULATION_DEFAULT | self.population
+        pop_str = f"{pop['particles']} {pop['generations']} {pop['inactive']} "\
+                  f"{pop['k_guess']} {pop['batch_interval']} {pop['parallel']}"
+        return 'set pop ' + pop_str + "\n" 
 
     @property
     def _ures(self) -> str:
