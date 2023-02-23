@@ -679,7 +679,7 @@ class LatticeRepresentation:
         return cls(out)
 
     @classmethod
-    def from_rows(cls, universes: list[Universe], length):
+    def from_multiple(cls, universes: list[Universe], length):
         """
         Creates the lattice representation from the rows of matrix in which
         each element is the same universe.
