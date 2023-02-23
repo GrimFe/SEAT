@@ -842,7 +842,7 @@ class Lattice(NestedUniverse):
 
     def __str__(self):
         string = self.comment.__str__()
-        string += f"lat {self.name} {LATTICE_TYPES[self.kind]}"
+        string += f"lat {self.name} {LATTICE_TYPES[self.kind]} "
         string += getattr(lf, self.kind + "_params")(**self.parameters)
         string += self.inline_comment.__str__()
         string += self.representation.__str__()

@@ -217,7 +217,7 @@ class Test_Lattice:
             (UNIVERSE2, sample_position)])
         lattice = geometry.Lattice(name=UniverseNames.LATTICE, parameters=dict(x0=0, y0=0, Nx=15, Ny=15, pitch=1.43),
                                    representation=representation,
-                                   kind=1)
+                                   kind='square')
         assert lattice.__str__() == "lat " + UniverseNames.LATTICE + " 1 0 0 15 15 1.43\n" + TargetLatticesStrings.GU3_LIKE
 
     def test_sub_universes(self) -> None:
