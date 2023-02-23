@@ -77,6 +77,9 @@ class DivisionWrapper:
     """
     divisions: list[Division]
 
+    def __iter__(self):
+        return self.divisions.__iter__()
+
     def format_sort(self) -> str:
         """
         Labels and sorts the divisions in the wrapper writing them to a string.
@@ -127,7 +130,7 @@ class DivisionWriter:
 
         """
         string = reformat(str(set(self.strings)), "{}'").replace(', ', '\n') + '\n'
-        if None not in {self.divisions}:
+        if None not in self.divisions:
             string += '\n'
             string += "set mvol\n\n"
             string += self.divisions.format_sort()
@@ -679,5 +682,5 @@ class Simulation:
             for mat in lat.materials:
                 if mat is not None and mat._division_string != '':
                     strings.append(mat._division_string)
-                    divisions.extend(mat.divisions)
+                    divisions.extend(mat._divisions)
         return DivisionWriter(strings, DivisionWrapper(divisions))
