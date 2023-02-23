@@ -171,8 +171,8 @@ class Test_LatticeRepresentation:
             (UNIVERSE1, self.control_rod_coordinates), (UNIVERSE2, sample_position_)])
         assert representation_.__str__() == TargetLatticesStrings.GU3_LIKE
 
-    def test_from_rows(self) -> None:
-        representation_rows = geometry.LatticeRepresentation.from_rows([UNIVERSE] * 15, 15)  # 15x15
+    def test_from_full_rows(self) -> None:
+        representation_rows = geometry.LatticeRepresentation.from_full_rows([UNIVERSE] * 15, 15)  # 15x15
         assert representation_rows.__str__() == TargetLatticesStrings.GU3_LIKE.replace('S', 'T').replace('G', 'T')
 
     def test_merge(self) -> None:
