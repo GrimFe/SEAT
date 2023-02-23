@@ -176,11 +176,11 @@ class Test_LatticeRepresentation:
         assert representation_rows.__str__() == TargetLatticesStrings.GU3_LIKE.replace('S', 'T').replace('G', 'T')
 
     def test_merge(self) -> None:
-        rep1 = geometry.LatticeRepresentation.from_rows([UNIVERSE] * 2, 15)
+        rep1 = geometry.LatticeRepresentation.from_full_rows([UNIVERSE] * 2, 15)
         rep2 = geometry.LatticeRepresentation.from_cartesian(shape=(1, 15), filler=UNIVERSE,
                                                              other=[
                                                                  (UNIVERSE1, [(3, 1), (6, 1), (10, 1), (13, 1)])])
-        rep3 = geometry.LatticeRepresentation.from_rows([UNIVERSE], 15)
+        rep3 = geometry.LatticeRepresentation.from_full_rows([UNIVERSE], 15)
         rep4 = geometry.LatticeRepresentation.from_cartesian(shape=(1, 15), filler=UNIVERSE,
                                                              other=[(UNIVERSE1, [(5, 1), (8, 1), (11, 1)])])
         rep5 = geometry.LatticeRepresentation.from_cartesian(shape=(1, 15), filler=UNIVERSE,
@@ -194,14 +194,14 @@ class Test_LatticeRepresentation:
         assert merged.__str__() == TargetLatticesStrings.GU3_LIKE
 
     def test_flatten(self) -> None:
-        representation_small = geometry.LatticeRepresentation.from_rows([UNIVERSE] * 2, 2)
+        representation_small = geometry.LatticeRepresentation.from_full_rows([UNIVERSE] * 2, 2)
         assert (representation_small.flatten == np.array([UNIVERSE] * 4)).all()
 
 
 class Test_Lattice:
     simple_universe = geometry.Universe(name=UniverseNames.SUB_UNIVERSE, _materials=[TEST_MATERIAL],
                                         comment=TEST_COMMENT)
-    REPRESENTATION = geometry.LatticeRepresentation.from_rows([simple_universe, simple_universe], 2)
+    REPRESENTATION = geometry.LatticeRepresentation.from_full_rows([simple_universe, simple_universe], 2)
 
     def test_str(self) -> None:
         control_rod_coordinates = [("C", 3), ("F", 3), ("J", 3), ("M", 3),
