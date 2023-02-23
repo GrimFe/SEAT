@@ -677,7 +677,7 @@ class Simulation:
         divisions = []
         for lat in self.geometry.lattices:
             for mat in lat.materials:
-                if mat is not None and mat.division_string != '':
-                    strings.append(mat.division_string)
+                if mat is not None and mat._division_string != '':
+                    strings.append(mat._division_string)
                     divisions.extend(mat.divisions)
         return DivisionWriter(strings, DivisionWrapper(divisions))
