@@ -5,6 +5,7 @@ import copy as cp
 from SEAT.Serpent2InputWriter.base import Entity, reformat
 from SEAT.Serpent2InputWriter.composition import Material
 import SEAT.surface_functions as sf
+import SEAT.lattice_functions as lf
 
 from dataclasses import dataclass, field
 
@@ -23,6 +24,18 @@ __all__ = [
 
 UniversesIncluded = {}
 
+LATTICE_TYPES = {"square": 1,
+                 "Xhex": 2,
+                 "Yhex": 3,
+                 "circular": 4,
+                 "square_short": 6,
+                 "Xhex_short": 7,
+                 "Yhex_short": 8,
+                 "vertical": 9,
+                 "cuboid": 11,
+                 "Xhex_prism": 12,
+                 "Yhex_prism": 13,
+                 "Xtriangular": 14}
 
 class ExistingUniverse(Exception):
     pass
@@ -274,7 +287,7 @@ class Surface(Entity):
     inline_comment : `SEAT.InlineComment`, optional
         the comment to be written on the same line as the Serpent 2 entity id.
         The default is SEAT.Comment('').
-    parameters : dict[float], optional
+    parameters : dict[str, float], optional
         the input parameters required by the type expressed by `kind`. The
         default is {}.
     kind : str, optional
@@ -305,7 +318,7 @@ class Surface(Entity):
         copies the object instance to another memory allocation.
 
     """
-    parameters: dict[float] = field(default_factory=dict)
+    parameters: dict[str, float] = field(default_factory=dict)
     kind: str = 'sqc'
     _operator: str = ''
 
@@ -638,7 +651,7 @@ class LatticeRepresentation:
         filler : `SEAT.Universe`
             the universe filling the lattice or most of it.
         other: list[tuple[`SEAT.Universe`, list[tuple[int | str]]]], optional
-            couples universes with a list of coordinate where those belong to
+            couples universes with a list of coordinates where those belong to
             in the lattice. The coordinates can be expressed as values starting
             from 1 or one-letter strings. The default is [].
 
@@ -767,19 +780,28 @@ class Lattice(NestedUniverse):
         the materials in the universe. The default is [].
     daughters : list[Universe], optional
         the universes nested in the universe.
-    parameters : list[float], optional
+    parameters : dict[str, float], optional
         the input parameters required by the type expressed by `kind`. The
-        default is [].
+        default is {}.
     representation : `SEAT.LatticeRepresentation`, optional
         the lattice visual representation in terms of composing universes. The
         default is None.
-    kind : int
+    kind : str
         the type of the lattice.
         Allowed `kind` values are:
-            - 1: square lattice
-            - 2: x-hexagonal lattice
-            - 3: y-hexagonal lattice
-        The default value is 1.
+            - 'square': squared Nx Ny lattice (1 in Serpent).
+            - 'Xhex': X-hexagonal Nx Ny lattice (2 in Serpent).
+            - 'Yhex': Y-hexagonal Nx Ny lattice (2 in Serpent).
+            - 'circular': circular cluster array (4 in Serpent).
+            - 'square_short': squared lattice (6 in Serpent).
+            - 'Xhex_short': X-hexagonal lattice (7 in Serpent).
+            - 'Yhex_short': Y-hexagonal lattice (8 in Serpent).
+            - 'vertical': vertical stack (9 in Serpent).
+            - 'cuboid': cuboidal lattice (11 in Serpent).
+            - 'Xhex_prism': X-hexagonal prism (12 in Serpent).
+            - 'Yhex_prism': Y-hexagonal prism (13 in Serpent).
+            - 'Xtriangular': X-triangular lattice (14 in Serpent).
+        The default value is 'square'.
 
     Properties
     ----------
@@ -798,9 +820,9 @@ class Lattice(NestedUniverse):
         adds a Universe-like object to the nested universe.
 
     """
-    parameters: list[float] = field(default_factory=list)
+    parameters: dict[str, float] = field(default_factory=dict)
     representation: LatticeRepresentation = None
-    kind: int = 1
+    kind: str = 'square'
 
     @property
     def sub_universes(self) -> np.array:
@@ -820,9 +842,8 @@ class Lattice(NestedUniverse):
 
     def __str__(self):
         string = self.comment.__str__()
-        string += f"lat {self.name} {self.kind}"
-        for p in self.parameters:
-            string += f" {p}"
+        string += f"lat {self.name} {LATTICE_TYPES[self.kind]}"
+        string += getattr(lf, self.kind + "_params")(**self.parameters)
         string += self.inline_comment.__str__()
         string += self.representation.__str__()
         return string

@@ -215,7 +215,7 @@ class Test_Lattice:
         representation = geometry.LatticeRepresentation.from_cartesian(shape=(15, 15), filler=UNIVERSE, other=[
             (UNIVERSE1, control_rod_coordinates),
             (UNIVERSE2, sample_position)])
-        lattice = geometry.Lattice(name=UniverseNames.LATTICE, parameters=[0, 0, 15, 15, 1.43],
+        lattice = geometry.Lattice(name=UniverseNames.LATTICE, parameters=dict(x0=0, y0=0, Nx=15, Ny=15, pitch=1.43),
                                    representation=representation,
                                    kind=1)
         assert lattice.__str__() == "lat " + UniverseNames.LATTICE + " 1 0 0 15 15 1.43\n" + TargetLatticesStrings.GU3_LIKE
@@ -253,7 +253,7 @@ class Test_Geometry:
     n_side_pins = 2
     representation = geometry.LatticeRepresentation.from_cartesian(shape=(n_side_pins, n_side_pins), filler=father)
     c1, c2 = 0, 0
-    lattice = geometry.Lattice(name=UniverseNames.GEOMETRY_LATTICE, parameters=[0, 0, n_side_pins, n_side_pins, r1],
+    lattice = geometry.Lattice(name=UniverseNames.GEOMETRY_LATTICE, parameters=dict(x0=0, y0=0, Nx=n_side_pins, Ny=n_side_pins, pitch=r1),
                                representation=representation)
     geom = geometry.Geometry(pins=[pin], surfaces=[surface], cells=[cell], cell_wraps=cw, lattices=[lattice])
 
