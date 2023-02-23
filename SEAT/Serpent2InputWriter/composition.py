@@ -750,16 +750,19 @@ class Material(Entity):
     _division_string: str, optional
         header string to the divisions. The default is ''.
 
+    Properties
+    ----------
+    temperature : str
+        the temperature of the material.
+    temperature_kind : str
+        the kind of temperature in the material definition.
+
     Methods
     -------
     assess :
         prints the `SEAT.Material` python id.
     write :
         writes the `SEAT.Material` to a file.
-    get_temperature :
-        gets the temperature of the material.
-    get_temperature_kind :
-        gets the kind of temperature in the material definition.
     divide :
         computes and creates the desired material divisions.
 
@@ -790,7 +793,8 @@ class Material(Entity):
         if self._mixture is not None:
             string += f"mix {self.name}" + self.inline_comment.__str__() + f"{self._mixture}"
         else:
-            string += f"mat {self.name} {self.dens} {self.get_temperature_kind()} {self.get_temperature()}"
+            string += f"mat {self.name} {self.dens} "
+            string += "{self.temperature_kind} {self.temperature}" if self.temperature_kind != '' else ''
         # Check which cards work for the mix material and relate it to the transfer of kwargs in its definition
         if self.rgb is not None:
             string += f" rgb {self.rgb[0]} {self.rgb[1]} {self.rgb[2]}"
@@ -837,7 +841,8 @@ class Material(Entity):
             a.append(f"{k.name} {v}\n")
         return cls(name=name, _mixture=''.join(a), **kwargs)
 
-    def get_temperature(self) -> str:
+    @property
+    def temperature(self) -> str:
         """
         Gets the temperature of the material if any of `tms`, `tmp` or `tft`
         is defined, else gets the temperature of `SEAT.Material.representation`.
@@ -873,7 +878,8 @@ class Material(Entity):
             temperature = self.representation.tmp
         return temperature
 
-    def get_temperature_kind(self) -> str:
+    @property
+    def temperature_kind(self) -> str:
         """
         Gets the kind of temperature in the material definition.
 
@@ -888,7 +894,7 @@ class Material(Entity):
             the temperature type.
 
         """
-        kind = None
+        kind = ''
         number = 0
         if self.tms is not None:
             kind = 'tms'
@@ -899,13 +905,16 @@ class Material(Entity):
         if self.tft is not None:
             kind = 'tft'
             number += 1
-        string = "More than one temperature type" if number > 1 else "No temperature type"
         # Actually, if number == 0, no temperature specificatio was given, which
         # is allowed in Serpent. One could then think of unifying get_temperature
         # and get_temperature_kind in format_temperature, which would return a
         # string with kind and temperature or empty if no kind is given.
-        if number != 1:
-            raise Exception(string + f' was given to Material {self.name}')
+        if number > 1:
+            raise Exception(f'More than one temperature type was given to Material {self.name}')
+        if number == 0:
+            warnstring = f'No temperature kind was specified for Material {self.name}.'
+            warnstring += '\nNo temperature will be written.'
+            warnings.warn(warnstring)
         return kind
 
     def divide(self, lvl: int, kind: str, sub: tuple[int | float]):

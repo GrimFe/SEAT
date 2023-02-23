@@ -59,8 +59,8 @@ class Universe(Entity):
     _materials : list[`SEAT.Material`], optional
         the materials in the universe. The default is [].
 
-    Properties:
-    -----------
+    Properties
+    ----------
     materials : list[`SEAT.Material`] | [None]
         the materials in the universe. [None] if no material is included.
 
@@ -123,8 +123,8 @@ class NestedUniverse(Universe):
     daughters : list[Universe], optional
         the universes nested in the universe.
 
-    Properties:
-    -----------
+    Properties
+    ----------
     materials : list[`SEAT.Material`] | [None]
         the materials in the universe. [None] if no material is included.
 
@@ -208,13 +208,13 @@ class Pin(Universe):
         couples the Material and its radius (0 or `None` for external material).
         The default is [].
 
-    Properties:
-    -----------
+    Properties
+    ----------
     materials : list[`SEAT.Material`] | [None]
         the materials in the universe. [None] if no material is included.
 
-    Methods:
-    --------
+    Methods
+    -------
     assess :
         prints the `SEAT.Pin` python id.
     write :
@@ -481,8 +481,8 @@ class CellWrap(Universe):
     _cells : list[`SEAT.Cell`], optional
         the list of cells wrapepd in the father universe. The default is [].
 
-    Properties:
-    -----------
+    Properties
+    ----------
     materials : list[`SEAT.Material`] | [None]
         the materials in the universe. [None] if no material is included.
     cells : list[`SEAT.Cell`]
@@ -591,9 +591,9 @@ class LatticeRepresentation:
 
     Properties
     ----------
-    as_array :
+    as_array : `np.ndarray`
         the representation universes as `np.ndarray`.
-    flatten :
+    flatten : `np.ndarray`
         the represenattion universe as 1D `np.array`.
 
     Methods
