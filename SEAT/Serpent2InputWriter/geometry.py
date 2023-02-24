@@ -347,7 +347,7 @@ class Surface(Entity):
             teh flipped surface if `ret` is True, else None.
 
         """
-        self._operator = '-'
+        self._operator = '-' if self._operator == '' else ''
         if ret:
             return self
 
