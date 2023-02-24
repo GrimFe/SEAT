@@ -74,6 +74,7 @@ class Test_Cell:
                              delimiters=[delimiter_flip])
         str_flip = f"cell {cell.name} {self.father.name} {TEST_MATERIAL.name} - {self.delimiter.name}\n"
         assert cell.__str__() == str_flip
+        assert delimiter_flip.flip()._operator == ''
 
 
 class Test_CellWrap:
