@@ -291,11 +291,15 @@ class Entity:
     ----------
     name : str | int
         the identity of the Serpent 2 entity.
+        SHOULD NOT BE MODIFIED AFTER INITIALIZATION.
     comment : `SEAT.Comment`, optional
         the comment to the Serpent entity. The default is SEAT.Comment('').
     inline_comment : `SEAT.InlineComment`, optional
         the comment to be written on the same line as the Serpent 2 entity id.
         The default is SEAT.Comment('').
+    _hashable_name : None
+        the hashable name for the entity hash. The default is None; then it is
+        initialized to `_Immutable(self.name)` in the `__post_init__` method
 
     Methods
     --------
@@ -306,11 +310,16 @@ class Entity:
     duplicate :
         makes a superficial copy of the `SEAT.Entity` with a new name.
 
+    Note
+    ----
+    `name` and `_hashable_name` should not be changed. Consider using the 
+    `duplicate` method to get similar results.
+
     """
     name: str | int  # **NEVER** change; use self.duplicate() instead
     comment: Comment = Comment('')
     inline_comment: InlineComment = InlineComment('')
-    _hashable_name: str | int = None  # This is private for good reasons
+    _hashable_name: None = None  # This is private for good reasons
 
     def __post_init__(self):
         self._hashable_name = _Immutable(self.name)
