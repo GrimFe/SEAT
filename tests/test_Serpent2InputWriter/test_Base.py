@@ -33,13 +33,26 @@ class Test_InlineComment:
 
 
 class Test_Entity:
+    entity = base.Entity(name=TEST_NAME)
+
     def test_str(self) -> None:
-        entity = base.Entity(name=TEST_NAME)
-        assert entity.__str__() == TEST_NAME
+        assert self.entity.__str__() == TEST_NAME
 
     def test_numerical_name(self):
         entity = base.Entity(name=1)
         assert entity.__str__() == '1'
+
+    def test_hashable_name(self):
+        assert self.entity._hashable_name == base._Immutable(TEST_NAME)
+
+    def test_hashability(self):
+        assert {self.entity}
+
+    def test_duplicate(self):
+        entity = self.entity.duplicate(TEST_NAME + "_")
+        for attr in entity.__slots__:
+            if "name" not in attr:
+                assert getattr(entity, attr) is getattr(self.entity, attr)
 
 
 class Test_Functions:

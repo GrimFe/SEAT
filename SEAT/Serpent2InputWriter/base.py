@@ -1,5 +1,6 @@
 import copy as cp
 from dataclasses import dataclass
+import numpy as np
 
 __author__ = "Federico Grimaldi"
 __all__ = [
@@ -174,6 +175,20 @@ def surface_complement(surfaces: list) -> list:
 #         out.append(new)
 #     return out
 
+@dataclass(slots=True, frozen=True)
+class _Immutable:
+    """
+    Immutable objects to allow hashability.
+
+    Attributes
+    ----------
+    identity : str | int
+        the immutable identity of the object
+
+    """
+    identity: str | int
+
+
 @dataclass(slots=True)
 class Comment:
     """
@@ -276,11 +291,15 @@ class Entity:
     ----------
     name : str | int
         the identity of the Serpent 2 entity.
+        SHOULD NOT BE MODIFIED AFTER INITIALIZATION.
     comment : `SEAT.Comment`, optional
         the comment to the Serpent entity. The default is SEAT.Comment('').
     inline_comment : `SEAT.InlineComment`, optional
         the comment to be written on the same line as the Serpent 2 entity id.
         The default is SEAT.Comment('').
+    _hashable_name : None
+        the hashable name for the entity hash. The default is None; then it is
+        initialized to `_Immutable(self.name)` in the `__post_init__` method
 
     Methods
     --------
@@ -288,15 +307,37 @@ class Entity:
         prints the `SEAT.Entity` python id.
     write :
         writes the `SEAT.Entity` to a file.
+    duplicate :
+        makes a superficial copy of the `SEAT.Entity` with a new name.
+
+    Note
+    ----
+    `name` and `_hashable_name` should not be changed. Consider using the 
+    `duplicate` method to get similar results.
 
     """
-    name: str | int
+    name: str | int  # **NEVER** change; use self.duplicate() instead
     comment: Comment = Comment('')
     inline_comment: InlineComment = InlineComment('')
+    _hashable_name: None = None  # This is private for good reasons
+
+    def __post_init__(self):
+        self._hashable_name = _Immutable(self.name)
 
     def __str__(self):
         string = self.comment.__str__() + f"""{self.name}"""
         return string
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__()):
+            eq = np.prod([getattr(self, attr) == getattr(other, attr) for attr
+                          in self.__slots__])
+        else:
+            eq = 0
+        return bool(eq)
+
+    def __hash__(self):
+        return hash(self._hashable_name)
 
     def assess(self):
         """
@@ -327,6 +368,37 @@ class Entity:
         """
         with open(file, mode=mode) as f:
             f.write(self.__str__())
+
+    def duplicate(self, new_name: str | int):
+        """
+        Creates a duplicate of the object with a new name.
+
+        Parameters
+        ----------
+        new_name: str | int
+            the name of the new object instance
+
+        Returns
+        -------
+        `self.__class__()`
+            a new instance of the class with changed name and therefore hash.
+
+        Raise
+        -----
+        ValueError :
+            if `new_name` == `self.name`
+
+        Note
+        ----
+        This is a superficial copy. The attributes are not copied but passed as
+        values.
+
+        """
+        if new_name == self.name:
+            raise ValueError(f"The `new_name` should differ from {self.name}")
+        attrs = {a: getattr(self, a) for a in self.__slots__}
+        attrs["name"] = new_name
+        return self.__class__(**attrs)
 
 
 @dataclass(slots=True)
