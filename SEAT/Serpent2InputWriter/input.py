@@ -630,7 +630,7 @@ class Simulation:
         else:
             warnings.warn("No output file is set for the simulation object")
 
-    def write(self, file):
+    def write(self, file: None):
         """
         Writes the Serpent 2 input file progressively appending section by section in the order:
             * Introductory comments
@@ -647,17 +647,19 @@ class Simulation:
 
         Parameters
         ----------
-        file : str
-            the name of the file to write the simulation to.
+        file : str, optional
+            the name of the file to write the simulation to. The default is
+            None.
 
         Returns
         -------
             None.
 
         """
-        if self._file is not None:
+        if self._file is not None and file is not None:
             warnings.warn("Ignoring a previously defined file was already defined for this simulation.")
-        self._file = file
+        if file is not None:
+            self._file = file            
         with open(self._file, 'w') as f:
             f.write(self.__str__())
         self._written = True
