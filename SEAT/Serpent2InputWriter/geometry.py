@@ -56,6 +56,9 @@ class Universe(Entity):
     inline_comment : `SEAT.InlineComment`, optional
         the comment to be written on the same line as the Serpent 2 entity id.
         The default is SEAT.Comment('').
+    overwrite: bool, optional
+        defines whether possible existing universes with the same name should
+        be overwritten in UniversesIncluded. The default is False.
     _materials : list[`SEAT.Material`], optional
         the materials in the universe. The default is [].
 
@@ -72,11 +75,12 @@ class Universe(Entity):
         writes the `SEAT.Universe` to a file.
 
     """
+    overwrite: bool = False
     _materials: list[Material] = field(default_factory=list[Material])
 
     def __post_init__(self):
         global UniversesIncluded
-        if self.name not in UniversesIncluded.keys():
+        if self.name not in UniversesIncluded.keys() or self.overwrite:
             UniversesIncluded[self.name] = self
         else:
             raise ExistingUniverse(f'Universe named {self.name} already exists.')
