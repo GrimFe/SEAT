@@ -162,10 +162,11 @@ class Simulation:
 
     Attributes
     ----------
-    geometry : `SEAT.Geometry`
-        the geometry of the simulation.
-    composition : `SEAT.Composition`
-        the materials and nuclear data used in the simulation.
+    geometry : `SEAT.Geometry`, optional
+        the geometry of the simulation. The default is None.
+    composition : `SEAT.Composition`, optional
+        the materials and nuclear data used in the simulation. The default is
+        None.
     depletion : `SEAT.Depletion`, optional
         the neutron flux normalization and the time definition. The default is
         None.
@@ -336,8 +337,8 @@ class Simulation:
         gets the divisions of the materials in the Simulation lattice(s)
 
     """
-    geometry: Geometry
-    composition: Composition
+    geometry: Geometry = None
+    composition: Composition = None
     depletion: Depletion = None
     others: Other = None
     comments: dict[str, Comment] = field(default_factory=lambda: COMMENT_BASE_DCT)
@@ -383,13 +384,15 @@ class Simulation:
         string += self._xscalc
         string += self._printm_fraction
         string += '\n'
-        string += self.comments['Geometry'].__str__()
-        string += self.geometry.__str__()
+        if self.geometry is not None:
+            string += self.comments['Geometry'].__str__()
+            string += self.geometry.__str__()
         if self.depletion is not None:
             string += self.comments['Steps'].__str__()
             string += self.depletion.__str__()
-        string += self.comments['Materials'].__str__()
-        string += self.composition.__str__()
+        if self.composition is not None:
+            string += self.comments['Materials'].__str__()
+            string += self.composition.__str__()
         if self.others is not None:
             string += self.comments['Others'].__str__()
             string += '\n'
