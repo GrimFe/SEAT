@@ -9,6 +9,7 @@ class test_Functions:
         assert check_allowed_key({1: 'a'}, {1: 'a', 2: 'b'})
         assert not check_allowed_key({3: 'c'}, {1: 'a', 2: 'b'})
 
+
 class test_DivisionWrapper:
     def test_format_sort(self) -> None:
         pass
