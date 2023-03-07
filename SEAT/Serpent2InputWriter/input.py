@@ -1,4 +1,5 @@
 import copy as cp
+import numpy as np
 import warnings
 import dataclasses
 from dataclasses import dataclass, field
@@ -10,58 +11,46 @@ from SEAT.Serpent2InputWriter.base import Comment, Other, reformat
 
 from SEAT.nuclides import nuclide2zam
 
+import SEAT.Serpent2InputWriter._DefaultOptions as DefaultOptions
+import SEAT.Serpent2InputWriter._AllowedFields as AllowedFields
+
 __author__ = "Federico Grimaldi"
 __all__ = [
     "Simulation",
 ]
 
-EMPTY_COMMENT = Comment('')
-COMMENT_BASE_DCT: dict[str, Comment] = {'Intro': EMPTY_COMMENT,
-                                        'Geometry': EMPTY_COMMENT,
-                                        'Steps': EMPTY_COMMENT,
-                                        'Materials': EMPTY_COMMENT,
-                                        'Others': EMPTY_COMMENT,
-                                        'Concluding': EMPTY_COMMENT}
-POPULATION_DEFAULT: dict[str, int] = {'particles': 100000,
-                                      'generations': 250,
-                                      'inactive': 30,
-                                      'k_guess': 1,
-                                      'batch_interval': 1,
-                                      'parallel': 1}
-API_LINK = 'https://github.com/GrimFe/Serpent2InputWriter.git'
+
+API_LINK = 'https://github.com/GrimFe/SEAT'
 HEADER_COMMENT = f"""/*
 #############################################################################################################################################
 #                                                                                                                                           #
 #                                            Serpent2 input file written with SOUP 0.0.1 python API                                         #
-#                                               https://github.com/GrimFe/Serpent2InputWriter.git                                           #
+#                                                           https://github.com/GrimFe/SEAT                                                  #
 #                                                                                                                                           #
 #############################################################################################################################################
 */\n\n"""
 
-PREDICTOR_CORRECTOR_MODES = {'CE': 0,
-                             'CELI': 1,
-                             'LE': 2,
-                             'LELI': 3,
-                             'LEQI': 4,
-                             'CECE': 6,
-                             0: 0,
-                             1: 1,
-                             2: 2,
-                             3: 3,
-                             4: 4,
-                             5: 5,
-                             6: 6}
-BC_MODES = {'vacuum': 1,
-            'reflective': 2,
-            'periodic': 3,
-            'V': 1,
-            'R': 2,
-            'P': 3,
-            1: 1,
-            2: 2,
-            3: 3}
-
 mvol_counter = {}
+
+def check_allowed_key(to_check, target) -> bool:
+    """
+    Checks whether a dictionary is a sub-dictionary of another.
+
+    Parameters
+    ----------
+    to_check: dict
+        the dictionary to check
+    target: dict
+        the target dictionary
+
+    Returns
+    -------
+    test: bool
+        True if the `to_check` is a sub-dictinary of `target`.
+
+    """
+    test = np.prod([k in target.keys() for k in to_check.keys()])
+    return test
 
 
 @dataclass(slots=True)
@@ -172,7 +161,9 @@ class Simulation:
     others : `SEAT.Others`, optional
         for what is not implemented yet. The default is None
     comments : dict[str, `SEAT.Comment`], optional
-        comments to the simulation sections.    
+        comments to the simulation sections.
+        * keys: comment section identifier.
+        * values: comment for the section.
         Allowed dictionary keys are:
             - 'Intro': introductory comments
             - 'Geometry': geometry comments
@@ -188,10 +179,13 @@ class Simulation:
     fpcut : float, optional
         the cumulative fission product yield cutoff in each mass chain. The
         default is 1.
-    xscalc : int, optional
+    xscalc : int | str, optional
         control on how transmutation cross-sections are computed.
         Allowed `xscalc` vlaues are:
             - None: no calculation
+            - 'NO': no calculation
+            - 'DIRECT': direct tallies
+            - 'SPECTRUM': spectrum collapse
             - 1: direct tallies
             - 2: spectrum collapse
         The default is None.
@@ -200,6 +194,7 @@ class Simulation:
         It composes of an on/off switch and of the minimum atomic fraction to
         print: 1 prints any decay nuclide, 0 prints those that don't have a
         transport cross section. The default is (False, 1).
+        The use of resetart files is recommeded instead.
     restart_filename: str
         the name of the restart file for the material composition.
         The default is None (restart file name = restart+self._file in the
@@ -210,7 +205,7 @@ class Simulation:
             - 'particles': the number of neutrons per generation.
                             The default is 100000.
             - 'generations': the number of active generations.
-                            The default is 250
+                            The default is 250.
             - 'inactive': the number of inactive generations.
                             The default is 30.
             - 'k_guess': the guess value for k effective.
@@ -220,18 +215,22 @@ class Simulation:
             - 'parallel': the number of independent parallel eigenvalue
                             calculations. The default is 1.
     gcu : list[`SEAT.Universe`]
-        the universes of the group constants. The default is None (no generation).
+        the universes of the group constants. The default is None (no
+        generation).
     bumode : str, optional
         burnup calculation mode.
         Allowed `bumode` options are:
+            - 'TTA': Transmutation Trajectory Analysis
             - 'CRAM': Chebyshev Rational Approximation Method (parameters in
                     `cram_bumode`)
-            - 'TTA': Transmutation Trajectory Analysis
+            - 1: Transmutation Trajectory Analysis
+            - 2: Chebyshev Rational Approximation Method (parameters in
+                    `cram_bumode`)
         The default is 'CRAM'.
-    cram_bumode: tuple[int]
-        CRAM burnup mode settings. The first items is the order, the second
+    cram_param: tuple[int], optional
+        CRAM burnup mode settings. The first item is the order, the second
         is the number of substeps.
-        Allowed CRAM order values are:
+        Allowed `cram_param` order values are:
             - 2
             - 4
             - 6
@@ -258,12 +257,14 @@ class Simulation:
     pcc_param : tuple[int], optional
         the number of steps for the pcc. The first value is for the predictor,
         the second is for the corrector. The default is None.
-    ures : tuple[bool, `SEAT.MaterialRepresentation`, float], optional
-        - bool: a flag to turn the Unresolved REsonance Probability table 
-                Sampling (ures) on/off. The default is False = off.
-        - MaterialRepresentation: the representation of the materials for
-                which ures should be considered. The default is None.
-        - float: the dilution cut. The default is 1e-9.
+    ures : dict[str, any], optional
+        Unresolved REsonance Probability table Sampling (ures) settings.
+        Allowed dictionary keys are:
+        - 'active': boolean to activate ures. The default is False.
+        - 'representation': `SEAT.MaterialRepresentation` of the nuclides ures
+                            should be applyed to. The default is None.
+        - 'dilution_cut': float for the infinite dilution cut-off. The default
+                        is 1e-9.
     bc : int | str | tuple[int|str], optional
         the boundary conditions to the simulation.
             The tuple is used to set separate bc for the X, Y, Z directions.
@@ -278,11 +279,13 @@ class Simulation:
     inventory : list | string | tuple, optional
         nuclides to report in the simulation output.
         It can be:
-            - list of materials to include in Isotope form `['U-235', 'Am-242']` or `['U235', 'Am242']`,
+            - list of materials to include in 
+                Isotope form `['U-235', 'Am-242']` or `['U235', 'Am242']`,
                 ZAI form `[922350, 952421]`,
                 Element in letters or mass number `['U', 'Am']` or `[92, 95]`
                 All the items in the list should follow the same notation.
-            - tuple of number of nuclides to include and parameter according to which choose them.
+            - tuple of number of nuclides to include and parameter according to
+              which choose them.
                 Allowed parameters are:
                     ~ `'mass'`      - for contribution to mass fraction
                     ~ `'activity'`  - for activity
@@ -340,21 +343,23 @@ class Simulation:
     composition: Composition
     depletion: Depletion = None
     others: Other = None
-    comments: dict[str, Comment] = field(default_factory=lambda: COMMENT_BASE_DCT)
+    comments: dict[str, Comment] = field(
+        default_factory=lambda: DefaultOptions.COMMENT_BASE_DCT)
     seed: int = None
     dix: bool = False
     fpcut: float = 0
     xscalc: int = None
     printm_fraction: tuple[bool, float] = field(default_factory=lambda: (False, 1))
-    population: dict[str, int] = field(default_factory=lambda: POPULATION_DEFAULT)
+    population: dict[str, int] = field(
+        default_factory=lambda: DefaultOptions.POPULATION)
     gcu: list[Universe] = None
     bumode: str = 'CRAM'
     cram_param: tuple[int, int] = None
     pcc: str | int = 0
     pcc_param: tuple[int, int] = None
-    ures: tuple[bool, MaterialRepresentation, float] = field(default_factory=lambda: (False, None, 0.000000001))
+    ures: dict[str, any] = field(default_factory=lambda: DefaultOptions.URES)
     inventory: list | tuple | str = 'all'
-    bc: tuple[str | int] | str | int = field(default_factory=lambda: 1)
+    bc: tuple[str | int] | str | int = 1
     albedo: float = 1
     _file: str = None
     _written: bool = False
@@ -478,7 +483,7 @@ class Simulation:
             the formatted pcc.
 
         """
-        pcc_ = PREDICTOR_CORRECTOR_MODES[self.pcc]
+        pcc_ = AllowedFields.PREDICTOR_CORRECTOR[self.pcc]
         if self.pcc_param is not None:
             parameters = reformat(str(self.pcc_param), "(),")
         else:
@@ -496,13 +501,8 @@ class Simulation:
             the formatted bumode.
 
         """
-        if self.bumode == 'TTA':
-            out = '1'
-        elif self.cram_param is not None:
-            out = '2 ' + reformat(str(self.cram_param), "(),")
-        else:
-            out = '2'
-        return 'set bumode ' + out + '\n'
+        params = reformat(str(self.cram_param), "(),") if self.cram_param is not None else ''
+        return f'set bumode {AllowedFields.BUMODE[self.bumode]} ' + params + '\n'
 
     @property
     def _gcu(self) -> str:
@@ -532,7 +532,9 @@ class Simulation:
             the formatted particle population.
 
         """
-        pop = POPULATION_DEFAULT | self.population
+        if not check_allowed_key(self.population, DefaultOptions.POPULATION):
+            warnings.warn("Some of the population keys are not alowed.")
+        pop = DefaultOptions.POPULATION | self.population
         pop_str = f"{pop['particles']} {pop['generations']} {pop['inactive']} "\
                   f"{pop['k_guess']} {pop['batch_interval']} {pop['parallel']}"
         return 'set pop ' + pop_str + "\n" 
@@ -548,19 +550,16 @@ class Simulation:
             the formatted ures.
 
         """
-        set_ures = self.ures[0]
-        if set_ures:
-            if isinstance(self.ures[1], MaterialRepresentation):
-                nuclides = ' '
-                nuclides += reformat(str(self.ures[1].get_nuclide_representation()), "[],'")
-                nuclides += ' '
-            else:
-                nuclides = ' '
-            dilcut = self.ures[2]
-            out = f"set ures {int(set_ures)}{nuclides}{dilcut}\n\n"
-        else:
-            out = f"set ures {int(set_ures)}\n\n"
-        return out
+        if not check_allowed_key(self.ures, DefaultOptions.URES):
+            warnings.warn("Some of the ures keys are not alowed.")
+        ures = DefaultOptions.URES | self.ures
+        ures_str = 'set ures '
+        ures_str += f'{int(ures["active"])}'
+        if ures["active"]:
+            ures_str += ' '
+            ures_str += reformat(str(ures["representation"].get_nuclide_representation()), "[],'")
+            ures_str += f' {ures["dilution_cut"]}'
+        return ures_str + '\n\n'
 
     @property
     def _bc(self) -> str:
@@ -574,12 +573,14 @@ class Simulation:
 
         """
         if isinstance(self.bc, tuple):
-            mode_ = [BC_MODES[bc] for bc in self.bc]
+            mode_ = [AllowedFields.BC[bc] for bc in self.bc]
             mode = reformat(str(mode_), "[],")
-            _albedo = f' {self.albedo}' if (BC_MODES['R'] in mode_ or BC_MODES['P'] in mode_) else ''
+            _albedo = f' {self.albedo}' if (AllowedFields.BC['R'] in mode_ or
+                                            AllowedFields.BC['P'] in mode_) else ''
         else:
-            mode = BC_MODES[self.bc]
-            _albedo = f' {self.albedo}' if (mode == BC_MODES['R'] or mode == BC_MODES['P']) else ''
+            mode = AllowedFields.BC[self.bc]
+            _albedo = f' {self.albedo}' if (mode == AllowedFields.BC['R'] or
+                                            mode == AllowedFields.BC['P']) else ''
         return f'set bc {mode}{_albedo}\n'
 
     @property

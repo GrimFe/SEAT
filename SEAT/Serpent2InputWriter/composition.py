@@ -1050,8 +1050,16 @@ class Composition:
         the materials of the simulation.
     libraries : dict[str, str]
         nuclear data libraries to use in the simulation.
-        * keys: Serpent library identifiers (.. list options ..).
+        * keys: Serpent library identifiers.
         * values: raw-string paths as values.
+        Allowed dictionary keys are:
+            - 'acelib': cross section data
+            - 'bralib': isomeric branching data
+            - 'coverxlib': COVERX-format multi-group covariance data
+            - 'covlib': ASCII multi-group covariance data
+            - 'declib': decay data
+            - 'nfylib': neutron induced fission yield data
+            - 'sfylib': spontaneous
     scattering_name : str, optional
         thermal scattering data name. The default is None.
     scattering_type : str, optional
@@ -1097,7 +1105,7 @@ class Composition:
     def __str__(self):
         string = ''
         for k, v in self.libraries.items():
-            string += f"{k} '{v}'\n"
+            string += f'set {k} "{v}"\n'
         string += '\n'
         if self.scattering_name is not None:
             libs = reformat(str(self.scattering_libs), "[],'")
@@ -1105,8 +1113,8 @@ class Composition:
         if self.to_restart is not None or self.from_restart is not None:
             string += '\n'
             string += Comment("Composition restart file definition").__str__()
-            string += f"rfw {self.to_restart}\n" if self.to_restart is not None else ''
-            string += f"rfw {self.from_restart}\n" if self.from_restart is not None else ''
+            string += f"set rfw {self.to_restart}\n" if self.to_restart is not None else ''
+            string += f"set rfw {self.from_restart}\n" if self.from_restart is not None else ''
         string += '\n'
         for m in self.materials:
             string += m.__str__()

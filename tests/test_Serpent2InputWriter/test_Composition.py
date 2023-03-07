@@ -241,7 +241,9 @@ class Test_Composition:
         scattering_tmp=-1,
         scattering_libs=['lwtr.16t'])
 
-    STR = f"{lib} '{path}'\n\ntherm lwe70 -1 lwtr.16t\n\n{mat}\n"
+    STR = f'set {lib} "{path}"\n\ntherm lwe70 -1 lwtr.16t\n\n' +\
+            'mat TestMaterial4Composition 1 tmp 1200\n2003.11c ' +\
+            '2.46744e-10\n2004.11c 0.000123372\n\n\n'
 
     def test_str(self) -> None:
         assert self.comp.__str__() == self.STR
