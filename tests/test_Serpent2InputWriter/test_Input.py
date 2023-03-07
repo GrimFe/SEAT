@@ -1,7 +1,13 @@
 from SEAT.Serpent2InputWriter import Simulation
 from SEAT.Serpent2InputWriter import Comment, StandaloneComment
 from SEAT.Serpent2InputWriter.base import reformat
+from SEAT.Serpent2InputWriter.input import check_allowed_key
 
+
+class test_Functions:
+    def test_check_allowed_key(self) -> None:
+        assert check_allowed_key({1: 'a'}, {1: 'a', 2: 'b'})
+        assert not check_allowed_key({3: 'c'}, {1: 'a', 2: 'b'})
 
 class test_DivisionWrapper:
     def test_format_sort(self) -> None:
@@ -82,9 +88,11 @@ class Test_Simulation:
 
     def test_ures(self) -> None:
         assert self.simulation._ures == 'set ures 0\n\n'
-        rp = self.composition.materials[0].representation.get_nuclide_representation()
-        self.simulation.ures = (True, rp, 1e-9)
-        assert f'set ures 1 ' + reformat(str(rp), "[],'") + str(1e-9)
+        rp = self.composition.materials[0].representation
+        self.simulation.ures = {"active": True, "representation": rp, "dilution_cut": 1e-9}
+        assert self.simulation._ures == 'set ures 1 ' +\
+                                        reformat(str(rp.get_nuclide_representation()), "[],'") +\
+                                        ' ' + str(1e-9) + '\n\n'
 
     def test_bc(self) -> None:
         assert self.simulation._bc == 'set bc 1\n'
