@@ -281,3 +281,27 @@ def cylz_params(r: float=0, x0: float=0, y0: float=0, z0: float=None,
 
     """
     return _cylinder_params(r, x0, y0, z0, z1)
+
+def rect_params(x0: float, x1: float, y0: float, y1: float) -> str:
+    """
+    Formats the parameters to rectangular surfaces oriented parallel to the
+    Z-direction.
+
+    Parameters
+    ----------
+    x0 : float
+        the X-lower boundary [cm].
+    x1 : float
+        the X-upper boundary [cm].
+    y0 : float
+        the Y-lower boundary [cm].
+    y1 : float
+        the Y-upper boundary [cm].
+
+    Returns
+    -------
+    str
+        the ordered parameters as Serpent2 formatted string.
+
+    """
+    return f"{x0} {x1} {y0} {y1}"
