@@ -47,3 +47,6 @@ class TestFunctions:
 
     def test_cylz_params(self):
         assert sf.cylz_params(self.A, self.B, self.C, self.D, self.E) == '1 2 0 3 4'
+
+    def test_rect_params(self):
+        assert sf.rect_params(self.A, self.B, self.C, self.D) == '0 1 2 3'
