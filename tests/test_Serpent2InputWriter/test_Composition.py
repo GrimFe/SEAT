@@ -193,7 +193,7 @@ class Test_Material:
 
     def test_mass_density(self):
         mat = composition.Material(name=TEST_NAME, dens=-self.DENSITY,
-                                   atomic_density=False,
+                                   nuclide_density=False,
                                    representation=self.REPRESENTATION,
                                    burn=True, tmp=self.TEMPERATURE,
                                    rgb=(255, 255, 255), vol=1, mass=1,
