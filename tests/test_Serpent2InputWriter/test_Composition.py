@@ -191,6 +191,15 @@ class Test_Material:
                                    fix={"09c": 900}, moder={'lwe70': 2004})
         assert mat.__str__() == self.TARGET_STRING_ALL
 
+    def test_mass_density(self):
+        mat = composition.Material(name=TEST_NAME, dens=-self.DENSITY,
+                                   nuclide_density=False,
+                                   representation=self.REPRESENTATION,
+                                   burn=True, tmp=self.TEMPERATURE,
+                                   rgb=(255, 255, 255), vol=1, mass=1,
+                                   fix={"09c": 900}, moder={'lwe70': 2004})
+        assert mat.__str__() == self.TARGET_STRING_ALL
+
     def test_mix(self) -> None:
         mat1 = composition.Material(name='dummy1')
         c1 = 0.8

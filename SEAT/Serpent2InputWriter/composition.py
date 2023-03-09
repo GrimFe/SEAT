@@ -793,7 +793,7 @@ class Material(Entity):
         if self._mixture is not None:
             string += f"mix {self.name}" + self.inline_comment.__str__() + f"{self._mixture}"
         else:
-            string += f"mat {self.name} {self.dens} "
+            string += f"mat {self.name} {self.dens if self.nuclide_density else -self.dens} "
             string += f"{self.temperature_kind} {self.temperature}" if self.temperature_kind != '' else ''
         # Check which cards work for the mix material and relate it to the transfer of kwargs in its definition
         if self.rgb is not None:
