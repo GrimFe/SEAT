@@ -1114,7 +1114,7 @@ class Composition:
             string += '\n'
             string += Comment("Composition restart file definition").__str__()
             string += f"set rfw {self.to_restart}\n" if self.to_restart is not None else ''
-            string += f"set rfw {self.from_restart}\n" if self.from_restart is not None else ''
+            string += f"set rfr {self.from_restart}\n" if self.from_restart is not None else ''
         string += '\n'
         for m in self.materials:
             string += m.__str__()
