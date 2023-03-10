@@ -61,4 +61,4 @@ class TestFunctions:
         assert sf.hexxprism_params(self.A, self.B, self.C, self.D, self.E) == '1 2 0 3 4'
 
     def test_hexyprism_params(self):
-        assert sf.hexxprism_params(self.A, self.B, self.C, self.D, self.E) == '1 2 0 3 4'
+        assert sf.hexyprism_params(self.A, self.B, self.C, self.D, self.E) == '1 2 0 3 4'
