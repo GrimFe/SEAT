@@ -306,7 +306,11 @@ class Surface(Entity):
             	- 'py': y-perpendicular plane.
             - 'pz': x-perpendicular plane.
             - 'sqc': squared cylinder.
-            - 'rect': z-parallel infiinite rectangular prism
+            - 'rect': z-parallel infiinite rectangular prism.
+            - 'hexxc': z-parallel infiinite hexagonal prism (x-parallel flat surface). 
+            - 'hexyc': z-parallel infiinite hexagonal prism (y-parallel flat surface). 
+            - 'hexxprism': z-parallel hexagonal prism (x-parallel flat surface). 
+            - 'hexyprism': z-parallel hexagonal prism (y-parallel flat surface). 
         The default is 'sqc'.
     _operator: str, optional
         the surface oprator. The default is ''.
