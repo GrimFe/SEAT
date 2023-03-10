@@ -375,7 +375,7 @@ def hexxprism_params(r: float, x0: float=0, y0: float=0, z0: float=None,
         the ordered parameters as Serpent2 formatted string.
 
     """
-    return _cylinder_params(r, x0, y0)
+    return _cylinder_params(r, x0, y0, z0, z1)
 
 def hexyprism_params(r: float, x0: float=0, y0: float=0, z0: float=None,
                z1: float=None):
@@ -402,4 +402,4 @@ def hexyprism_params(r: float, x0: float=0, y0: float=0, z0: float=None,
         the ordered parameters as Serpent2 formatted string.
 
     """
-    return _cylinder_params(r, x0, y0)
+    return _cylinder_params(r, x0, y0, z0, z1)
