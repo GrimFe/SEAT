@@ -80,13 +80,19 @@ class MaterialComposition:
 
     def __str__(self):
         if not self._already_za:
-            factor = 1 if self.atomic else -1
-            nuclides = {nuclide2zam(k.lower().capitalize()): factor * v for k, v in self.components.items()}
-            string = reformat(str(nuclides).replace(',', '\n'), '{} ').replace(':', ' ')
+            string = reformat(str(self.signed_components).replace(',', '\n'),
+                              '{} ').replace(':', ' ')
         else:
-            za = self.components
-            string = reformat(str(za).replace(',', '\n'), '{} ').replace(':', ' ')
+            za = self.signed_components
+            string = reformat(str(za).replace(',', '\n'),
+                              '{} ').replace(':', ' ')
         return string
+
+    @property
+    def signed_components(self):
+        factor = 1 if self.atomic else -1
+        return {nuclide2zam(k.lower().capitalize()): factor * v for
+                k, v in self.components.items()}
 
     @classmethod
     def parse(cls, string: str, *args, separator: str=None, **kwargs):
@@ -669,7 +675,7 @@ class MaterialRepresentation(MaterialComposition):
             with the densities as items.
 
         """
-        return [v for v in self.components.values()]
+        return [v for v in self.signed_components.values()]
 
     def write(self, file, mode: str='a'):
         """
