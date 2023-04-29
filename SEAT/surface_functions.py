@@ -281,3 +281,125 @@ def cylz_params(r: float=0, x0: float=0, y0: float=0, z0: float=None,
 
     """
     return _cylinder_params(r, x0, y0, z0, z1)
+
+def rect_params(x0: float, x1: float, y0: float, y1: float) -> str:
+    """
+    Formats the parameters to rectangular surfaces oriented parallel to the
+    Z-direction.
+
+    Parameters
+    ----------
+    x0 : float
+        the X-lower boundary [cm].
+    x1 : float
+        the X-upper boundary [cm].
+    y0 : float
+        the Y-lower boundary [cm].
+    y1 : float
+        the Y-upper boundary [cm].
+
+    Returns
+    -------
+    str
+        the ordered parameters as Serpent2 formatted string.
+
+    """
+    return f"{x0} {x1} {y0} {y1}"
+
+def hexxc_params(r: float, x0: float=0, y0: float=0):
+    """
+    Formats the parameters to hexagonal prism surfaces oriented parallel to the
+    Z-direction and flat surface perpendicolar to the X-direction.
+
+    Parameters
+    ----------
+    r : float
+        the hexagonal prism half-width[cm].
+    x0 : float, optional
+        the X-coordinate of the center [cm]. The default is 0.
+    y0 : float
+        the Y-coordinate of the center [cm]. The default is 0.
+
+    Returns
+    -------
+    str
+        the ordered parameters as Serpent2 formatted string.
+
+    """
+    return _cylinder_params(r, x0, y0)
+
+def hexyc_params(r: float, x0: float=0, y0: float=0):
+    """
+    Formats the parameters to hexagonal prism surfaces oriented parallel to the
+    Z-direction and flat surface perpendicolar to the Y-direction.
+
+    Parameters
+    ----------
+    r : float
+        the hexagonal prism half-width[cm].
+    x0 : float, optional
+        the X-coordinate of the center [cm]. The default is 0.
+    y0 : float
+        the Y-coordinate of the center [cm]. The default is 0.
+
+    Returns
+    -------
+    str
+        the ordered parameters as Serpent2 formatted string.
+
+    """
+    return _cylinder_params(r, x0, y0)
+
+def hexxprism_params(r: float, x0: float=0, y0: float=0, z0: float=None,
+               z1: float=None):
+    """
+    Formats the parameters to hexagonal prism surfaces oriented parallel to the
+    Z-direction and flat surface perpendicolar to the X-direction.
+
+    Parameters
+    ----------
+    r : float
+        the hexagonal prism half-width[cm].
+    x0 : float, optional
+        the X-coordinate of the center [cm]. The default is 0.
+    y0 : float
+        the Y-coordinate of the center [cm]. The default is 0.
+    z0 : float, optional
+        the lower bound of the hexagonal prism [cm]. The default is None.
+    z1 : float, optional
+        the upper bound of the hexagonal prism [cm]. The default is None.
+
+    Returns
+    -------
+    str
+        the ordered parameters as Serpent2 formatted string.
+
+    """
+    return _cylinder_params(r, x0, y0, z0, z1)
+
+def hexyprism_params(r: float, x0: float=0, y0: float=0, z0: float=None,
+               z1: float=None):
+    """
+    Formats the parameters to hexagonal prism surfaces oriented parallel to the
+    Z-direction and flat surface perpendicolar to the Y-direction.
+
+    Parameters
+    ----------
+    r : float
+        the hexagonal prism half-width[cm].
+    x0 : float, optional
+        the X-coordinate of the center [cm]. The default is 0.
+    y0 : float
+        the Y-coordinate of the center [cm]. The default is 0.
+    z0 : float, optional
+        the lower bound of the hexagonal prism [cm]. The default is None.
+    z1 : float, optional
+        the upper bound of the hexagonal prism [cm]. The default is None.
+
+    Returns
+    -------
+    str
+        the ordered parameters as Serpent2 formatted string.
+
+    """
+    return _cylinder_params(r, x0, y0, z0, z1)

@@ -79,14 +79,27 @@ class MaterialComposition:
     _already_za: bool = field(init=False, default=False)
 
     def __str__(self):
+        return reformat(str(self.signed_components).replace(',', '\n'),
+                              '{} ').replace(':', ' ')
+
+    @property
+    def signed_components(self) -> dict[str|int, float]:
+        """
+        Adjusts the sign of the components according to `self.atomic`.
+
+        Returns
+        -------
+        dict[str|int, float]
+            * key: the formatted nuclide zam or za
+            * value: the corresponding share with sign
+        """
+        factor = 1 if self.atomic else -1
         if not self._already_za:
-            factor = 1 if self.atomic else -1
-            nuclides = {nuclide2zam(k.lower().capitalize()): factor * v for k, v in self.components.items()}
-            string = reformat(str(nuclides).replace(',', '\n'), '{} ').replace(':', ' ')
+            out = {nuclide2zam(k.lower().capitalize()): factor * v for
+                k, v in self.components.items()}
         else:
-            za = self.components
-            string = reformat(str(za).replace(',', '\n'), '{} ').replace(':', ' ')
-        return string
+            out = {k: factor * v for k, v in self.components.items()}
+        return out
 
     @classmethod
     def parse(cls, string: str, *args, separator: str=None, **kwargs):
@@ -669,7 +682,7 @@ class MaterialRepresentation(MaterialComposition):
             with the densities as items.
 
         """
-        return [v for v in self.components.values()]
+        return [v for v in self.signed_components.values()]
 
     def write(self, file, mode: str='a'):
         """
@@ -793,7 +806,7 @@ class Material(Entity):
         if self._mixture is not None:
             string += f"mix {self.name}" + self.inline_comment.__str__() + f"{self._mixture}"
         else:
-            string += f"mat {self.name} {self.dens} "
+            string += f"mat {self.name} {self.dens if self.nuclide_density else -self.dens} "
             string += f"{self.temperature_kind} {self.temperature}" if self.temperature_kind != '' else ''
         # Check which cards work for the mix material and relate it to the transfer of kwargs in its definition
         if self.rgb is not None:
@@ -1114,7 +1127,7 @@ class Composition:
             string += '\n'
             string += Comment("Composition restart file definition").__str__()
             string += f"set rfw {self.to_restart}\n" if self.to_restart is not None else ''
-            string += f"set rfw {self.from_restart}\n" if self.from_restart is not None else ''
+            string += f"set rfr {self.from_restart}\n" if self.from_restart is not None else ''
         string += '\n'
         for m in self.materials:
             string += m.__str__()

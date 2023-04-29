@@ -47,3 +47,18 @@ class TestFunctions:
 
     def test_cylz_params(self):
         assert sf.cylz_params(self.A, self.B, self.C, self.D, self.E) == '1 2 0 3 4'
+
+    def test_rect_params(self):
+        assert sf.rect_params(self.A, self.B, self.C, self.D) == '0 1 2 3'
+
+    def test_hexxc_params(self):
+        assert sf.hexxc_params(self.A, self.B, self.C) == '1 2 0'
+
+    def test_hexyc_params(self):
+        assert sf.hexyc_params(self.A, self.B, self.C) == '1 2 0'
+
+    def test_hexxprism_params(self):
+        assert sf.hexxprism_params(self.A, self.B, self.C, self.D, self.E) == '1 2 0 3 4'
+
+    def test_hexyprism_params(self):
+        assert sf.hexyprism_params(self.A, self.B, self.C, self.D, self.E) == '1 2 0 3 4'

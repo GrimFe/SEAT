@@ -158,7 +158,7 @@ class Simulation:
     depletion : `SEAT.Depletion`, optional
         the neutron flux normalization and the time definition. The default is
         None.
-    others : `SEAT.Others`, optional
+    others : list[`SEAT.Other`], optional
         for what is not implemented yet. The default is None
     comments : dict[str, `SEAT.Comment`], optional
         comments to the simulation sections.
@@ -342,7 +342,7 @@ class Simulation:
     geometry: Geometry
     composition: Composition
     depletion: Depletion = None
-    others: Other = None
+    others: list[Other] = None
     comments: dict[str, Comment] = field(
         default_factory=lambda: DefaultOptions.COMMENT_BASE_DCT)
     seed: int = None
@@ -398,7 +398,8 @@ class Simulation:
         if self.others is not None:
             string += self.comments['Others'].__str__()
             string += '\n'
-            string += self.others.__str__()
+            for other in self.others:
+                string += other.__str__()
         string += '\n'
         string += "/* Material divisions */\n"
         string += self.divisions().to_string() + '\n'

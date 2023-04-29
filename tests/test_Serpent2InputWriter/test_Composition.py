@@ -1,4 +1,5 @@
 import pkg_resources
+import numpy as np
 
 import SEAT._names
 import SEAT.natural
@@ -28,6 +29,12 @@ class Test_MaterialComposition:
         comp1 = composition.MaterialComposition({'HE3': 2.46744e-10, 'HE4': 0.000123372}, self.atomic)
         comp2 = composition.MaterialComposition({'he3': 2.46744e-10, 'he4': 0.000123372}, self.atomic)
         assert comp0.__str__() == comp1.__str__() == comp2.__str__() == COMPOSITION_STR
+
+    def test_signed_components(self):
+        comp = composition.MaterialComposition(COMPONENTS, atomic=False)
+        assert np.prod([v1 == -v2 for
+                v1, v2 in zip(COMPONENTS.values(),
+                              comp.signed_components.values())])
 
     def test_atomic(self) -> None:
         comp = composition.MaterialComposition(COMPONENTS, atomic=False)
@@ -185,6 +192,15 @@ class Test_Material:
 
     def test_other_parameters(self) -> None:
         mat = composition.Material(name=TEST_NAME, dens=self.DENSITY,
+                                   representation=self.REPRESENTATION,
+                                   burn=True, tmp=self.TEMPERATURE,
+                                   rgb=(255, 255, 255), vol=1, mass=1,
+                                   fix={"09c": 900}, moder={'lwe70': 2004})
+        assert mat.__str__() == self.TARGET_STRING_ALL
+
+    def test_mass_density(self):
+        mat = composition.Material(name=TEST_NAME, dens=-self.DENSITY,
+                                   nuclide_density=False,
                                    representation=self.REPRESENTATION,
                                    burn=True, tmp=self.TEMPERATURE,
                                    rgb=(255, 255, 255), vol=1, mass=1,
