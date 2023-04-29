@@ -79,14 +79,27 @@ class MaterialComposition:
     _already_za: bool = field(init=False, default=False)
 
     def __str__(self):
+        return reformat(str(self.signed_components).replace(',', '\n'),
+                              '{} ').replace(':', ' ')
+
+    @property
+    def signed_components(self) -> dict[str|int, float]:
+        """
+        Adjusts the sign of the components according to `self.atomic`.
+
+        Returns
+        -------
+        dict[str|int, float]
+            * key: the formatted nuclide zam or za
+            * value: the corresponding share with sign
+        """
+        factor = 1 if self.atomic else -1
         if not self._already_za:
-            factor = 1 if self.atomic else -1
-            nuclides = {nuclide2zam(k.lower().capitalize()): factor * v for k, v in self.components.items()}
-            string = reformat(str(nuclides).replace(',', '\n'), '{} ').replace(':', ' ')
+            out = {nuclide2zam(k.lower().capitalize()): factor * v for
+                k, v in self.components.items()}
         else:
-            za = self.components
-            string = reformat(str(za).replace(',', '\n'), '{} ').replace(':', ' ')
-        return string
+            out = {k: factor * v for k, v in self.components.items()}
+        return out
 
     @classmethod
     def parse(cls, string: str, *args, separator: str=None, **kwargs):
@@ -669,7 +682,7 @@ class MaterialRepresentation(MaterialComposition):
             with the densities as items.
 
         """
-        return [v for v in self.components.values()]
+        return [v for v in self.signed_components.values()]
 
     def write(self, file, mode: str='a'):
         """
