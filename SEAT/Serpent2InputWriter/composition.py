@@ -79,20 +79,27 @@ class MaterialComposition:
     _already_za: bool = field(init=False, default=False)
 
     def __str__(self):
-        if not self._already_za:
-            string = reformat(str(self.signed_components).replace(',', '\n'),
+        return reformat(str(self.signed_components).replace(',', '\n'),
                               '{} ').replace(':', ' ')
-        else:
-            za = self.signed_components
-            string = reformat(str(za).replace(',', '\n'),
-                              '{} ').replace(':', ' ')
-        return string
 
     @property
-    def signed_components(self):
+    def signed_components(self) -> dict[str|int, float]:
+        """
+        Adjusts the sign of the components according to `self.atomic`.
+
+        Returns
+        -------
+        dict[str|int, float]
+            * key: the formatted nuclide zam or za
+            * value: the corresponding share with sign
+        """
         factor = 1 if self.atomic else -1
-        return {nuclide2zam(k.lower().capitalize()): factor * v for
+        if not self._already_za:
+            out = {nuclide2zam(k.lower().capitalize()): factor * v for
                 k, v in self.components.items()}
+        else:
+            out = {k: factor * v for k, v in self.components.items()}
+        return out
 
     @classmethod
     def parse(cls, string: str, *args, separator: str=None, **kwargs):
