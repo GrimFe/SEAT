@@ -192,6 +192,6 @@ class Test_DepletionSimulation:
                 self.simulation._bumode + self.simulation._pcc +\
                 self.simulation._xscalc + self.simulation._printm_fraction +\
                 "/* Depletion comment */\n" + self.depletion.__str__() +\
-                self.simulation.divisions().to_string() + '\n\n'
+                self.simulation.divisions().to_string() + '\n'
 
         assert self.simulation._depletion == test
