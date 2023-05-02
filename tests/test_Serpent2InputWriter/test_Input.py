@@ -191,6 +191,7 @@ class Test_DepletionSimulation:
         test = self.simulation._inventory + self.simulation._fpcut +\
                 self.simulation._bumode + self.simulation._pcc +\
                 self.simulation._xscalc + self.simulation._printm_fraction +\
-                self.depletion.__str__() + self.simulation.divisions().to_string() + '\n\n'
+                "/* Depletion comment */" + self.depletion.__str__() +\
+                self.simulation.divisions().to_string() + '\n\n'
 
         assert self.simulation._depletion == test

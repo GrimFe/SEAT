@@ -824,8 +824,9 @@ class DepletionSimulation(Simulation):
             string += self.depletion.__str__()
         else:
             warnings.warn("No Depletion included in the simulation.")
-        string += "/* Material divisions */\n"
-        string += self.divisions().to_string() + '\n'
+        if self.divisions().empty:
+            string += Comment("Material divisions").__str__()
+            string += self.divisions().to_string() + '\n'
         string += '\n'
         return string
 
@@ -840,7 +841,7 @@ class DepletionSimulation(Simulation):
             the formatted fpcut.
 
         """
-        return f'set fpcut {self.fpcut}\n\n'
+        return f'set fpcut {self.fpcut}\n'
 
     @property
     def _xscalc(self) -> str:
@@ -853,7 +854,7 @@ class DepletionSimulation(Simulation):
             the formatted xscalc.
 
         """
-        return f'set xscalc {self.xscalc}' if self.xscalc is not None else ''
+        return f'set xscalc {self.xscalc}\n' if self.xscalc is not None else ''
 
     @property
     def _printm_fraction(self) -> str:
