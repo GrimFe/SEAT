@@ -827,6 +827,7 @@ class DepletionSimulation(Simulation):
         string += "/* Material divisions */\n"
         string += self.divisions().to_string() + '\n'
         string += '\n'
+        return string
 
     @property
     def _fpcut(self) -> str:
