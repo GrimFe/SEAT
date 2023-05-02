@@ -820,7 +820,7 @@ class DepletionSimulation(Simulation):
         string += self._xscalc
         string += self._printm_fraction
         if self.depletion is not None:
-            string += self.comments['Steps'].__str__()
+            string += self.comments['Depletion'].__str__()
             string += self.depletion.__str__()
         else:
             warnings.warn("No Depletion included in the simulation.")
