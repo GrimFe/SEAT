@@ -605,7 +605,7 @@ class Simulation:
 
 
 @dataclass(slots=True)
-class DepletionSimulation:
+class DepletionSimulation(Simulation):
     """
     Defines a depletion simulation.
 
