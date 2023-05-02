@@ -120,12 +120,14 @@ class DivisionWriter:
         """
         string = ''
         if not self.empty:
+            string += Comment("Material divisions").__str__()
             string = reformat(str(set(self.strings)), "{}'").replace(', ', '\n')  # is the cast to set really needed? 'set' should also be removed form the string
             string += '\n'
             if None not in self.divisions:
                 string += '\n'
                 string += "set mvol\n\n"
                 string += self.divisions.format_sort()
+                string += '\n'
         return string
 
     @property
@@ -824,9 +826,7 @@ class DepletionSimulation(Simulation):
             string += self.depletion.__str__()
         else:
             warnings.warn("No Depletion included in the simulation.")
-        if self.divisions().empty:
-            string += Comment("Material divisions").__str__()
-            string += self.divisions().to_string() + '\n'
+        string += self.divisions().to_string()
         string += '\n'
         return string
 
