@@ -56,7 +56,7 @@ class Test_ImportancePlot:
     plt = inpt.ImportancePlot(xpix, ypix, kind, fmin=fmin, fmax=fmax, energy=e)
 
     def test_importance(self):
-        assert self.plt._importance == f'{self.fmin} {self.fmax} {self.e}'
+        assert self.plt._importance == f'{self.fmin} {self.fmax} {self.e} '
 
 
 class Test_MeshPlot:
@@ -188,8 +188,9 @@ class Test_DepletionSimulation:
         self.simulation.cram_param = self.cram_param
         self.simulation.inventory = self.inventory
 
-        test = self._inventory + self._fpcut + self._bumode + self._pcc +\
-                self._xscalc + self._printm_fraction + self.depletion.__str__() +\
-                self.divisions().to_string() + '\n'
+        test = self.simulation._inventory + self.simulation._fpcut +\
+                self.simulation._bumode + self.simulation._pcc +\
+                self.simulation._xscalc + self.simulation._printm_fraction +\
+                self.depletion.__str__() + self.divisions().to_string() + '\n'
 
         assert self.simulation._depletion == test
