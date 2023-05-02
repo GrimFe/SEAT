@@ -37,3 +37,6 @@ BUMODE = {"CRAM": 2,
           "TTA": 1,
           2: 2,
           1: 1}
+PLOT_KIND = {'yz': 1,
+             'xz': 2,
+             'xy': 3}

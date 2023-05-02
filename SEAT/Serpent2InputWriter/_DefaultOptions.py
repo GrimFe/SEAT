@@ -10,7 +10,7 @@ from SEAT.Serpent2InputWriter.composition import MaterialRepresentation
 EMPTY_COMMENT = Comment('')
 COMMENT_BASE_DCT: dict[str, Comment] = {'Intro': EMPTY_COMMENT,
                                         'Geometry': EMPTY_COMMENT,
-                                        'Steps': EMPTY_COMMENT,
+                                        'Depletion': EMPTY_COMMENT,
                                         'Materials': EMPTY_COMMENT,
                                         'Others': EMPTY_COMMENT,
                                         'Concluding': EMPTY_COMMENT}
