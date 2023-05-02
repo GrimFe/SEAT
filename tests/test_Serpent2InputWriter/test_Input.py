@@ -144,14 +144,14 @@ class Test_DepletionSimulation:
     inventory = (3, 'ng')
 
     def test_fpcut(self):
-        assert self.simulation._fpcut == 'set fpcut 0\n\n'
+        assert self.simulation._fpcut == 'set fpcut 0\n'
         self.simulation.fpcut = 1
-        assert self.simulation._fpcut == 'set fpcut 1\n\n'
+        assert self.simulation._fpcut == 'set fpcut 1\n'
 
     def test_xscalc(self):
         assert self.simulation._xscalc == ''
         self.simulation.xscalc = 1
-        assert self.simulation._xscalc == 'set xscalc 1'
+        assert self.simulation._xscalc == 'set xscalc 1\n'
 
     def test_printm_fraction(self):
         assert self.simulation._printm_fraction == 'set printm 0 1\n'
@@ -191,7 +191,7 @@ class Test_DepletionSimulation:
         test = self.simulation._inventory + self.simulation._fpcut +\
                 self.simulation._bumode + self.simulation._pcc +\
                 self.simulation._xscalc + self.simulation._printm_fraction +\
-                "/* Depletion comment */" + self.depletion.__str__() +\
+                "/* Depletion comment */\n" + self.depletion.__str__() +\
                 self.simulation.divisions().to_string() + '\n\n'
 
         assert self.simulation._depletion == test
