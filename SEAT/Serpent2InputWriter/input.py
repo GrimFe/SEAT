@@ -269,15 +269,15 @@ class ImportancePlot(GeometryPlot):
         warn = ''
         string = ''
         if self.fmin is not None:
-            string += str(self.fmin)
+            string += str(self.fmin) + ' '
         else:
             warn += 'fmin '
         if self.fmin is not None:
-            string += str(self.fmax)
+            string += str(self.fmax) + ' '
         else:
             warn += 'fmax '
         if self.fmin is not None:
-            string += str(self.energy)
+            string += str(self.energy) + ' '
         else:
             warn += 'energy'
         if warn != '':

@@ -129,7 +129,7 @@ class Test_DepletionSimulation:
                 'Materials': Comment('Composition comment'),
                 'Others': Comment('Extra comment'),
                 'Concluding': Comment('Concluding comment')}
-    simulation = inpt.Simulation(geometry, depletion, composition,
+    simulation = inpt.DepletionSimulation(geometry, depletion, composition,
                                  comments=COMMENTS)
 
     A, B = 1, 2
