@@ -1,10 +1,10 @@
 import copy as cp
 import numpy as np
 import warnings
-import dataclasses
 from dataclasses import dataclass, field
 
-from SEAT.Serpent2InputWriter.composition import Composition, MaterialRepresentation, Division
+from SEAT.Serpent2InputWriter.sensitivity import Sensitivity
+from SEAT.Serpent2InputWriter.composition import Composition, Division
 from SEAT.Serpent2InputWriter.geometry import Geometry, Universe
 from SEAT.Serpent2InputWriter.depletion import Depletion
 from SEAT.Serpent2InputWriter.base import Comment, Other, reformat
@@ -16,12 +16,17 @@ import SEAT.Serpent2InputWriter._AllowedFields as AllowedFields
 
 __author__ = "Federico Grimaldi"
 __all__ = [
+    "GeometryPlot",
+    "ImportancePlot",
+    "MeshPlot",
     "Simulation",
+    "DepletionSimulation",
+    "SensitivitySimulation",
 ]
 
 
 API_LINK = 'https://github.com/GrimFe/SEAT'
-HEADER_COMMENT = f"""/*
+HEADER_COMMENT = """/*
 #############################################################################################################################################
 #                                                                                                                                           #
 #                                            Serpent2 input file written with SEAT 0.0.1 python API                                         #
@@ -319,7 +324,7 @@ class Simulation:
             - 'Materials': composition comments
             - 'Others': other comments
             - 'Concluding': concluding comments
-            The default is None (all comments are empty).
+            By default all comments are empty.
     seed : int, optional
         seed for the random number generation. The default is None.
     dix : bool
@@ -417,6 +422,9 @@ class Simulation:
             for p in self.plots:
                 string += p.__str__()
         string += '\n'
+        if self._sensitivity is not None:
+            string += self.comments['Sensitivity'].__str__()
+            string += self._sensitivity
         string += self.comments['Geometry'].__str__()
         string += self.geometry.__str__()
         string += self.comments['Materials'].__str__()
@@ -552,6 +560,20 @@ class Simulation:
         """
         return None
 
+    @property
+    def _sensitivity(self) -> str:
+        """
+        The formatted sensitivity options for the simulation.
+        
+        Returns
+        -------
+        None
+            as the base simulation does not foresee any sensitivity.
+            Use SEAT.SensitivitySimulation instead.
+
+        """
+        return None
+
     def clear(self):
         """
         Clears what is written on the input file.
@@ -625,11 +647,12 @@ class DepletionSimulation(Simulation):
         * values: comment for the section.
         Allowed dictionary keys are:
             - 'Intro': introductory comments
+            - 'Depletion': depletion comments
             - 'Geometry': geometry comments
             - 'Materials': composition comments
             - 'Others': other comments
             - 'Concluding': concluding comments
-            The default is None (all comments are empty).
+            By defalt all comments are empty.
     seed : int, optional
         seed for the random number generation. The default is None.
     dix : bool
@@ -812,7 +835,7 @@ class DepletionSimulation(Simulation):
         Returns
         -------
         str
-            the formatted depleition simulation options.
+            the formatted depletion simulation options.
 
         """
         string = self._inventory
@@ -972,3 +995,139 @@ class DepletionSimulation(Simulation):
                     strings.append(mat._division_string)
                     divisions.extend(mat._divisions)
         return DivisionWriter(strings, DivisionWrapper(divisions))
+
+@dataclass(slots=True)
+class SensitivitySimulation(Simulation):
+    """
+    Defines a depletion simulation.
+
+    Attributes
+    ----------
+    geometry : `SEAT.Geometry`
+        the geometry of the simulation.
+    composition : `SEAT.Composition`
+        the materials and nuclear data used in the simulation.
+    others : list[`SEAT.Other`], optional
+        for what is not implemented yet. The default is None
+    comments : dict[str, `SEAT.Comment`], optional
+        comments to the simulation sections.
+        * keys: comment section identifier.
+        * values: comment for the section.
+        Allowed dictionary keys are:
+            - 'Intro': introductory comments
+            - 'Sensitivity': sensitivity comments
+            - 'Geometry': geometry comments
+            - 'Materials': composition comments
+            - 'Others': other comments
+            - 'Concluding': concluding comments
+            By default all comments are empty.
+    seed : int, optional
+        seed for the random number generation. The default is None.
+    dix : bool
+        double indexing method for the cross section energy grid look-up. The
+        default is False.
+    population : dict[str, float]
+        the particle population settings in the simulation.
+        Allowed dictionary keys are:
+            - 'particles': the number of neutrons per generation.
+                            The default is 100000.
+            - 'generations': the number of active generations.
+                            The default is 250.
+            - 'inactive': the number of inactive generations.
+                            The default is 30.
+            - 'k_guess': the guess value for k effective.
+                            The default is 1.
+            - 'batch_interval': the batching interval.
+                            The default is 1.
+            - 'parallel': the number of independent parallel eigenvalue
+                            calculations. The default is 1.
+    gcu : list[`SEAT.Universe`]
+        the universes of the group constants. The default is None (no
+        generation).
+    ures : dict[str, any], optional
+        Unresolved REsonance Probability table Sampling (ures) settings.
+        Allowed dictionary keys are:
+        - 'active': boolean to activate ures. The default is False.
+        - 'representation': `SEAT.MaterialRepresentation` of the nuclides ures
+                            should be applyed to. The default is None.
+        - 'dilution_cut': float for the infinite dilution cut-off. The default
+                        is 1e-9.
+    bc : int | str | tuple[int|str], optional
+        the boundary conditions to the simulation.
+            The tuple is used to set separate bc for the X, Y, Z directions.
+            Allowed `bc` values are:
+                - 'vacumm'        or 'V'   i.e. 1: vacuum boundary conditions
+                - 'reflective'    or 'R'   i.e. 2: reflective boundary conditions
+                - 'periodic'      or 'P'   i.e. 3: periodic boundary conditions
+            The default is 1, corresponding to 'vacuum'.
+    albedo : float
+        the value of the albedo to set for reflective and/or periodic boundary
+        conditions. The default is 1.
+    _file : str, optional
+        name of the file which the simulation is written to. The default is
+        None.
+    _written : bool, optional
+        indicates whether the simulation has already been written. The
+        default is False.
+    _restart_filename : str, optional
+        name of the binary file the simulation composition should be written
+        to. The default is None.
+    sensitivity: `SEAT.Sensitivity`, optional
+        the perturbation and the induced response. The default is None.
+    egrid: `SEAT.EnergyGrid`, optional
+        the enrgy grid over which the sensitivity profiles should be computed.
+        The default is None.
+    dmesh: `SEAT.DataMesh`, optional
+        the data mesh used for the sensitivity scoring. The default is None.
+    latgen: int, optional
+        the number of latent generations used for the sensitivity calculation.
+        The default is 5 (i.e., 5 for keff and 5+1 for bilinear ratios).
+    history: bool, optional
+        stores the sensitivity of every number of latent generations. The
+        default is None.
+    direct_scoring: bool, optional
+        number of score matrices allocated for score generation. Automatically
+        activates the direct scoring rather than the devfault event based
+        scoring. The default is None, keeping the event based scoring.
+    nbuf: int, optional
+        the neutron buffer size. The default is 5.
+    ebank: int, optional
+        the event bank size. The default is 100.
+
+    Methods:
+    --------
+    clear :
+        clears what is written on the input file.
+    write :
+        writes the model to the input file. This process goes section by section.
+
+    """
+    sensitivity: Sensitivity = None
+    egrid: any = None  # will be an energy grid object instance
+    dmesh: any = None # will be a data mesh object instance
+    latgen: int = None
+    history: bool = False
+    direct_scoring: float = None
+    nbuf: int = 5
+    ebank: int = 100
+
+    @property
+    def _sensitivity(self):
+        """
+        The formatted sensitivity options for the simulation.
+        
+        Returns
+        -------
+        str
+            the formatted sensitivity simulation options.
+    
+        """
+        string = f'set opt egrid {self.egrid.name}\n' if self.egrid is not None else ''
+        string += f'set opt dmesh {self.dmesh.name}\n' if self.dmesh is not None else ''
+        string += f'set opt latgen {self.latgen}\n' if self.latgen is not None else ''
+        string += 'set opt history 1\n' if self.history else ''
+        string += f'set opt direct {self.direct}\n' if self.direct is not None else ''
+        if self.nbuf != 5 or self.ebank != 100:
+            string += f'set nbuf {self.nbuf} {set.ebank}\n'
+        string = self.sensitivity.__str__()
+        return string
