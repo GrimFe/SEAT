@@ -1,10 +1,10 @@
 import copy as cp
 import numpy as np
 import warnings
-import dataclasses
 from dataclasses import dataclass, field
 
-from SEAT.Serpent2InputWriter.composition import Composition, MaterialRepresentation, Division
+from SEAT.Serpent2InputWriter.sensitivity import Sensitivity
+from SEAT.Serpent2InputWriter.composition import Composition, Division
 from SEAT.Serpent2InputWriter.geometry import Geometry, Universe
 from SEAT.Serpent2InputWriter.depletion import Depletion
 from SEAT.Serpent2InputWriter.base import Comment, Other, reformat
@@ -22,12 +22,11 @@ __all__ = [
     "Simulation",
     "DepletionSimulation",
     "SensitivitySimulation",
-    
 ]
 
 
 API_LINK = 'https://github.com/GrimFe/SEAT'
-HEADER_COMMENT = f"""/*
+HEADER_COMMENT = """/*
 #############################################################################################################################################
 #                                                                                                                                           #
 #                                            Serpent2 input file written with SEAT 0.0.1 python API                                         #
@@ -423,6 +422,9 @@ class Simulation:
             for p in self.plots:
                 string += p.__str__()
         string += '\n'
+        if self._sensitivity is not None:
+            string += self.comments['Sensitivity'].__str__()
+            string += self._sensitivity
         string += self.comments['Geometry'].__str__()
         string += self.geometry.__str__()
         string += self.comments['Materials'].__str__()
@@ -554,6 +556,20 @@ class Simulation:
         None
             as the base simulation does not foresee any depletion.
             Use SEAT.DepletionSimulation instead.
+
+        """
+        return None
+
+    @property
+    def _sensitivity(self) -> str:
+        """
+        The formatted sensitivity options for the simulation.
+        
+        Returns
+        -------
+        None
+            as the base simulation does not foresee any sensitivity.
+            Use SEAT.SensitivitySimulation instead.
 
         """
         return None
@@ -819,7 +835,7 @@ class DepletionSimulation(Simulation):
         Returns
         -------
         str
-            the formatted depleition simulation options.
+            the formatted depletion simulation options.
 
         """
         string = self._inventory
@@ -1056,7 +1072,27 @@ class SensitivitySimulation(Simulation):
     _restart_filename : str, optional
         name of the binary file the simulation composition should be written
         to. The default is None.
-
+    sensitivity: `SEAT.Sensitivity`, optional
+        the perturbation and the induced response. The default is None.
+    egrid: `SEAT.EnergyGrid`, optional
+        the enrgy grid over which the sensitivity profiles should be computed.
+        The default is None.
+    dmesh: `SEAT.DataMesh`, optional
+        the data mesh used for the sensitivity scoring. The default is None.
+    latgen: int, optional
+        the number of latent generations used for the sensitivity calculation.
+        The default is 5 (i.e., 5 for keff and 5+1 for bilinear ratios).
+    history: bool, optional
+        stores the sensitivity of every number of latent generations. The
+        default is None.
+    direct_scoring: bool, optional
+        number of score matrices allocated for score generation. Automatically
+        activates the direct scoring rather than the devfault event based
+        scoring. The default is None, keeping the event based scoring.
+    nbuf: int, optional
+        the neutron buffer size. The default is 5.
+    ebank: int, optional
+        the event bank size. The default is 100.
 
     Methods:
     --------
@@ -1066,3 +1102,32 @@ class SensitivitySimulation(Simulation):
         writes the model to the input file. This process goes section by section.
 
     """
+    sensitivity: Sensitivity = None
+    egrid: any = None  # will be an energy grid object instance
+    dmesh: any = None # will be a data mesh object instance
+    latgen: int = None
+    history: bool = False
+    direct_scoring: float = None
+    nbuf: int = 5
+    ebank: int = 100
+
+    @property
+    def _sensitivity(self):
+        """
+        The formatted sensitivity options for the simulation.
+        
+        Returns
+        -------
+        str
+            the formatted sensitivity simulation options.
+    
+        """
+        string = f'set opt egrid {self.egrid.name}\n' if self.egrid is not None else ''
+        string += f'set opt dmesh {self.dmesh.name}\n' if self.dmesh is not None else ''
+        string += f'set opt latgen {self.latgen}\n' if self.latgen is not None else ''
+        string += 'set opt history 1\n' if self.history else ''
+        string += f'set opt direct {self.direct}\n' if self.direct is not None else ''
+        if self.nbuf != 5 or self.ebank != 100:
+            string += f'set nbuf {self.nbuf} {set.ebank}\n'
+        string = self.sensitivity.__str__()
+        return string
