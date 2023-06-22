@@ -19,6 +19,3 @@ Usage:
 # when changing version also adapt the default string in the input.py file
 __version__ = '0.0.1'
 
-
-class SOUPException(Exception):
-    pass
