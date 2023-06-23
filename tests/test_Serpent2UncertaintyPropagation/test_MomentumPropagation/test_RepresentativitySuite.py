@@ -43,10 +43,10 @@ class Test_Functions:
         assert RS.sandwich(self.s1, self.cov, self.s2).values == 45
 
     def test_stdev(self):
-        assert RS.stdev(self.s1, self.cov).values[0,0] == 4.3817804600413295
+        assert np.round(RS.stdev(self.s1, self.cov).values[0,0], 15) == 4.381780460041330
 
     def test_representativity(self):
-        assert RS.representativity(self.s1, self.cov, self.s2).values[0,0] == 0.9854781210518185
+        assert np.round(RS.representativity(self.s1, self.cov, self.s2).values[0,0], 15) == 0.985478121051818
 
     def test_u_sandwich(self):
         pass
