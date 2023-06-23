@@ -6,6 +6,8 @@ from SEAT import composites
 from SEAT import natural
 import SEAT.composition_functions
 
+# import SEAT.Serpent2UncertaintyPropagation.MomentumPropagation
+
 __all__ = [
     "Serpent2InputWriter",
     "Serpent2InputParser",
