@@ -1,4 +1,4 @@
-import onversions
-import CovarianceSuite
-import RepresentativitySuite
-import SensitivitySuite
+from SEAT.Serpent2UncertaintyPropagation.MomentumPropagation.conversions import *
+from SEAT.Serpent2UncertaintyPropagation.MomentumPropagation.CovarianceSuite import *
+from SEAT.Serpent2UncertaintyPropagation.MomentumPropagation.RepresentativitySuite import *
+from SEAT.Serpent2UncertaintyPropagation.MomentumPropagation.SensitivitySuite import *
