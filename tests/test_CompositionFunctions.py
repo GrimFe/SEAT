@@ -19,6 +19,8 @@ class Test_Functions:
     def test_unfold_composite(self) -> None:
         u = unfold_composite(SEAT.composites.H2O, atomic=True)
         assert u == {'H1': 0.66659, 'H2': 7.666666666666667e-05, 'O16': 0.3325233333333333, 'O17': 0.00012666666666666666, 'O18': 0.0006833333333333333}
+        u = unfold_composite({'H': 2, 'O': 16}, atomic=False)
+        assert u == {'H1': 1.99977, 'H2': 0.00023, 'O16': 15.96112, 'O17': 0.00608, 'O18': 0.0328}
 
     # def test_get_existing_xs(self) -> None:
     #     assert get_existing_xs('endfb71')[0] == 'Ba138'
