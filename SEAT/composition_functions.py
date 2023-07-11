@@ -55,7 +55,7 @@ def are_nuclides(keys: set[str]) -> bool:
     """
     return bool(np.prod([k.isalnum() for k in keys])) and bool(np.prod([not k.isalpha() for k in keys]))
 
-def unfold_composite(composite: dict[str, float]) -> dict[str, float]:
+def unfold_composite(composite: dict[str, float], atomic: bool) -> dict[str, float]:
     """
     Unfrolds a number of elements to teir isotopic compositions
 
@@ -64,6 +64,8 @@ def unfold_composite(composite: dict[str, float]) -> dict[str, float]:
     composite : dict[str, float]
         * key: the element symbols.
         * float: the corresponding abundances.
+    atomic : bool
+        makes the material densities be interpreted as atomic or mass.
 
     Returns
     -------
@@ -72,9 +74,14 @@ def unfold_composite(composite: dict[str, float]) -> dict[str, float]:
         * values: the corresponding abundances.
 
     """
-    return {k: v * share
-            for element, share in composite.items()
-            for k, v in getattr(SEAT.natural, element).items()}
+    if atomic:
+        return {k: v * share
+                for element, share in composite.items()
+                for k, v in getattr(SEAT.natural, element).items()}
+    else:
+        return {k: v * share
+                for element, share in composite.items()
+                for k, v in getattr(SEAT.natural, 'm' + element).items()}
 
 def get_existing_xs(library: str) -> set:
     """
