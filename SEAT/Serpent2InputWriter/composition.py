@@ -225,7 +225,7 @@ class MaterialComposition:
 
         """
         if are_elements(set(abundance.keys())):
-            abundance_ = unfold_composite(abundance)
+            abundance_ = unfold_composite(abundance, kwargs['atomic'])
         elif are_nuclides(set(abundance.keys())):
             abundance_ = abundance
         else:
@@ -269,7 +269,11 @@ class MaterialComposition:
 
         """
         if base in dir(SEAT.natural):
-            return cls.enriched_custom(getattr(SEAT.natural, base), *args, atomic=True, **kwargs)
+            if kwargs['atomic']:
+                out =  cls.enriched_custom(getattr(SEAT.natural, base), *args, **kwargs)
+            else:
+                out = cls.enriched_custom(getattr(SEAT.natural, 'm' + base), *args, **kwargs)
+            return out
         elif base in dir(SEAT.composites):
             return cls.enriched_custom(getattr(SEAT.composites, base), *args, atomic=True, **kwargs)
         else:
@@ -353,7 +357,11 @@ class MaterialComposition:
 
         """
         if base in dir(SEAT.natural):
-            return cls.polluted_custom(getattr(SEAT.natural, base), *args, atomic=True, **kwargs)
+            if kwargs['atomic']:
+                out = cls.polluted_custom(getattr(SEAT.natural, base), *args **kwargs)
+            else:
+                out = cls.polluted_custom(getattr(SEAT.natural, 'm' + base), *args **kwargs)
+            return out
         elif base in dir(SEAT.composites):
             return cls.polluted_custom(getattr(SEAT.composites, base), *args, atomic=True, **kwargs)
         else:
@@ -380,7 +388,11 @@ class MaterialComposition:
             the instance created by the classmethod.
 
         """
-        return cls(getattr(SEAT.natural, element), *args, atomic=True, **kwargs)
+        if kwargs['atomic']:
+            cmp = getattr(SEAT.natural, element)
+        else:
+            cmp = getattr(SEAT.natural, 'm' + element)
+        return cls(cmp, *args, **kwargs)
 
     @classmethod
     def predefined(cls, composite: str, *args, **kwargs):
@@ -552,7 +564,9 @@ class MaterialComposition:
         available = get_existing_xs(library)
         exclude = {k: 0 for k in self.components.keys() - available}
         if verbose: print(f"Excluding:\n{exclude}")
-        if exclude: self.components = {k: v for k, v in enrich(self.components, exclude).items() if v != 0}
+        if exclude: self.components = {k: v for k, v in
+                                       enrich(self.components, exclude,
+                                              self.atomic).items() if v != 0}
         return self
 
     def copy(self):
