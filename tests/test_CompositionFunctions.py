@@ -17,7 +17,7 @@ class Test_Functions:
         assert not are_nuclides({'Am241m', 'U'})
 
     def test_unfold_composite(self) -> None:
-        u = unfold_composite(SEAT.composites.H2O)
+        u = unfold_composite(SEAT.composites.H2O, atomic=True)
         assert u == {'H1': 0.66659, 'H2': 7.666666666666667e-05, 'O16': 0.3325233333333333, 'O17': 0.00012666666666666666, 'O18': 0.0006833333333333333}
 
     # def test_get_existing_xs(self) -> None:
