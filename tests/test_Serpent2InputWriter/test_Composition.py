@@ -57,50 +57,50 @@ class Test_MaterialComposition:
 
     def test_enriched_custom(self) -> None:
         # test enriched_custom(nuclides with nuclides)
-        c = composition.MaterialComposition.enriched_custom(SEAT.natural.U, {'U235': 0.03}, self.atomic)
+        c = composition.MaterialComposition.enriched_custom(SEAT.natural.U, {'U235': 0.03}, atomic=self.atomic)
         assert c.__str__() == self.enriched_uranium.__str__()
         # test enriched_custom(elements with nuclides)
-        e = composition.MaterialComposition.enriched_custom(SEAT.composites.UO2, {'U235': 0.03}, True)
+        e = composition.MaterialComposition.enriched_custom(SEAT.composites.UO2, {'U235': 0.03}, atomic=True)
         assert e.__str__() == self.UO2_enriched_str
 
     def test_enriched(self) -> None:
         # test enriched from natural abundances
-        e = composition.MaterialComposition.enriched('U', {'U235': 0.03})
+        e = composition.MaterialComposition.enriched('U', {'U235': 0.03}, atomic=True)
         assert e.__str__() == self.enriched_uranium.__str__()
         # test enriched from composites
-        e = composition.MaterialComposition.enriched('UO2', {'U235': 0.03})
+        e = composition.MaterialComposition.enriched('UO2', {'U235': 0.03}, atomic=True)
         assert e.__str__() == self.UO2_enriched_str
 
     def test_polluted_custom(self) -> None:
         # test polluted_custom(nuclides with nuclides)
-        p = composition.MaterialComposition.polluted_custom(SEAT.natural.U, {'Pu239': 0.01}, self.atomic)
+        p = composition.MaterialComposition.polluted_custom(SEAT.natural.U, {'Pu239': 0.01}, atomic=self.atomic)
         assert p.__str__() == self.polluted_uranium.__str__()
         # test polluted_custom(elements with nuclides)
-        p = composition.MaterialComposition.polluted_custom(SEAT.composites.H2O, {'Pu239': 0.01}, self.atomic)
+        p = composition.MaterialComposition.polluted_custom(SEAT.composites.H2O, {'Pu239': 0.01}, atomic=self.atomic)
         assert p.__str__() == self.H2O_polluted_str
         # test polluted_custom(nuclides with elements)
-        p = composition.MaterialComposition.polluted_custom(SEAT.natural.Pb, {'Sb': 0.5}, self.atomic)
+        p = composition.MaterialComposition.polluted_custom(SEAT.natural.Pb, {'Sb': 0.5}, atomic=self.atomic)
         assert p.__str__() == '511210 0.28605\n511230 0.21395\n822040 0.00689\n822060 0.11978\n822070 0.11037\n822080 0.26296'
         # test polluted_custom(elements with elements)
-        p = composition.MaterialComposition.polluted_custom(SEAT.composites.H2O, {'Sb': 0.5}, self.atomic)
+        p = composition.MaterialComposition.polluted_custom(SEAT.composites.H2O, {'Sb': 0.5}, atomic=self.atomic)
         assert p.__str__() == '511210 0.28605\n511230 0.21395\n10010 0.333295\n10020 3.8333333333333334e-05\n80160 0.16626166666666664\n80170 6.333333333333333e-05\n80180 0.00034166666666666666'
 
     def test_polluted(self) -> None:
         # test polluted from natural abundances
-        p = composition.MaterialComposition.polluted('U', {'Pu239': 0.01})
+        p = composition.MaterialComposition.polluted('U', {'Pu239': 0.01}, atomic=True)
         assert p.__str__() == self.polluted_uranium.__str__()
         # test polluted from composites
-        p = composition.MaterialComposition.polluted('H2O', {'Pu239': 0.01})
+        p = composition.MaterialComposition.polluted('H2O', {'Pu239': 0.01}, atomic=True)
         assert p.__str__() == self.H2O_polluted_str
 
     def test_natural(self) -> None:
-        assert composition.MaterialComposition.natural('Be').__str__() == '40090 1.0'
+        assert composition.MaterialComposition.natural('Be', atomic=True).__str__() == '40090 1.0'
 
     def test_predefined(self) -> None:
-        assert composition.MaterialComposition.predefined('Bi').__str__() == '832090 1.0'
+        assert composition.MaterialComposition.predefined('Bi', atomic=True).__str__() == '832090 1.0'
 
     def test_composite(self) -> None:
-        c = composition.MaterialComposition.composite({'H': 0.5, 'B': 0.5}, self.atomic)
+        c = composition.MaterialComposition.composite({'H': 0.5, 'B': 0.5}, atomic=self.atomic)
         assert c.__str__() == '10010 0.4999425\n10020 5.75e-05\n50100 0.0995\n50110 0.4005'
 
     def test_from_zam(self) -> None:
