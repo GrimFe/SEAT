@@ -275,7 +275,10 @@ class MaterialComposition:
                 out = cls.enriched_custom(getattr(SEAT.natural, 'm' + base), *args, **kwargs)
             return out
         elif base in dir(SEAT.composites):
-            return cls.enriched_custom(getattr(SEAT.composites, base), *args, atomic=True, **kwargs)
+            if not kwargs['atomic']:
+                kwargs['atomic'] = True
+                warnings.warn("Default SEAT conmposites require atomic densities.")
+            return cls.enriched_custom(getattr(SEAT.composites, base), *args, **kwargs)
         else:
             raise Exception(f"{base} not found in the SEAT database.")
 
@@ -312,7 +315,7 @@ class MaterialComposition:
 
         """
         if are_elements(set(abundance.keys())):
-            abundance_ = unfold_composite(abundance)
+            abundance_ = unfold_composite(abundance, atomic=kwargs['atomic'])
         elif are_nuclides(set(abundance.keys())):
             abundance_ = abundance
         else:
@@ -320,7 +323,7 @@ class MaterialComposition:
         if are_nuclides(set(pollutants.keys())):
             pollutants_ = pollutants
         elif are_elements(pollutants.keys()):
-            pollutants_ = unfold_composite(pollutants)
+            pollutants_ = unfold_composite(pollutants, atomic=kwargs['atomic'])
         else:
             raise Exception("The keys of the pollutants should be nuclides.")
         return cls(pollute(abundance_, pollutants_), *args, **kwargs)
@@ -358,12 +361,15 @@ class MaterialComposition:
         """
         if base in dir(SEAT.natural):
             if kwargs['atomic']:
-                out = cls.polluted_custom(getattr(SEAT.natural, base), *args **kwargs)
+                out = cls.polluted_custom(getattr(SEAT.natural, base), *args, **kwargs)
             else:
-                out = cls.polluted_custom(getattr(SEAT.natural, 'm' + base), *args **kwargs)
+                out = cls.polluted_custom(getattr(SEAT.natural, 'm' + base), *args, **kwargs)
             return out
         elif base in dir(SEAT.composites):
-            return cls.polluted_custom(getattr(SEAT.composites, base), *args, atomic=True, **kwargs)
+            if not kwargs['atomic']:
+                kwargs['atomic'] = True
+                warnings.warn("Default SEAT conmposites require atomic densities.")
+            return cls.polluted_custom(getattr(SEAT.composites, base), *args, **kwargs)
         else:
             raise Exception(f"{base} not found in the SEAT database.")
 
@@ -415,8 +421,10 @@ class MaterialComposition:
             the instance created by the classmethod.
 
         """
-        
-        return cls.composite(getattr(SEAT.composites, composite), *args, atomic=True, **kwargs)
+        if not kwargs['atomic']:
+            kwargs['atomic'] = True
+            warnings.warn("Default SEAT conmposites require atomic densities.")
+        return cls.composite(getattr(SEAT.composites, composite), *args, **kwargs)
 
     @classmethod
     def composite(cls, elements: dict[str, float], *args, **kwargs):
@@ -438,7 +446,7 @@ class MaterialComposition:
             the instance created by the classmethod.
 
         """
-        return cls(unfold_composite(elements), *args, **kwargs)
+        return cls(unfold_composite(elements, atomic=kwargs['atomic']), *args, **kwargs)
 
     @classmethod
     def from_zam(cls, zam: dict[int, float], *args, **kwargs):
@@ -565,8 +573,7 @@ class MaterialComposition:
         exclude = {k: 0 for k in self.components.keys() - available}
         if verbose: print(f"Excluding:\n{exclude}")
         if exclude: self.components = {k: v for k, v in
-                                       enrich(self.components, exclude,
-                                              self.atomic).items() if v != 0}
+                                       enrich(self.components, exclude).items() if v != 0}
         return self
 
     def copy(self):
