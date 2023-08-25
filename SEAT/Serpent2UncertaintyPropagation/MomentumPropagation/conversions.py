@@ -1,9 +1,17 @@
-__all__ = ['MT2NAME',
+import uncertainties
+from uncertainties import ufloat
+
+__all__ = ['AffineScalarFun_2_Variable',
+           'MT2NAME',
            'MTLIST2MT',
            'REALIST2MT',
            'MATs',
            'MTs',
            'ECCO33']
+
+def AffineScalarFun_2_Variable(x: uncertainties.core.AffineScalarFunc) -> uncertainties.core.Variable:
+    return ufloat(x.nominal_value, x.std_dev)
+
 
 MT2NAME = {'2': "(z,elastic)",
            '1': 'total',
