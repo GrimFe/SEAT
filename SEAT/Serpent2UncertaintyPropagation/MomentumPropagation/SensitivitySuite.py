@@ -3,6 +3,9 @@ import numpy as np
 import serpentTools as sts
 import SEAT.nuclides
 
+import uncertainties
+from uncertainties import unumpy
+
 from SEAT.Serpent2UncertaintyPropagation.MomentumPropagation.conversions import *
 
 __all__ = [
@@ -119,10 +122,18 @@ def sts2df(reader, drop_total: bool=True, observe=None) -> pd.DataFrame:
 class Sensitivity:
     """
     Container of sensitivity information.
+
+    Names will be:
+        Index: 'Observable', 'N', 'MT', 'E [MeV]'
+        Columns: 'S', 'stat. err.' (in relative terms)
+        Columns: 'nom_val' and 'abs_sdev' will be created when accessing 'data'
+        Other columns can be added without posing problems
     """
     _csv = False
     _csv_index = None
     _df = None
+    _idx_names = ['Observable', 'N', 'MT', 'E [MeV]']
+    _col_names = ['S', 'stat. err.', 'nom_val', 'abs_sdev']  # colum names not necessarily limited to this
 
     def __init__(self, file: str, drop_total: bool=True, observable: str=None, concat=None):
         self.file = file
@@ -158,7 +169,7 @@ class Sensitivity:
                 pert = get_perts_rea(self.reader)        
             ene = get_ene(self.reader)
             idx = pd.MultiIndex.from_product([obs, zai, pert, ene],
-                                          names=["Observable", "N", "MT", "E [MeV]"])
+                                          names=self._idx_names)
         if self.concat is not None:
             idx = idx.append(self.concat.index)
         if self.drop_total:
@@ -169,7 +180,7 @@ class Sensitivity:
     @property
     def data(self):
         if self._df is not None:
-            df = self._df
+            df = self._df.copy()
         elif self._csv:
             df = pd.read_csv(self.file).drop("Unnamed: 0", axis=1)
             if self.drop_total:
@@ -180,6 +191,17 @@ class Sensitivity:
             df = sts2df(sts.read(self.file), self.drop_total, [self.observable])
         if self.concat is not None:
             df = pd.concat([df, self.concat])
+        # uncertain sensitivities with uncertainties.py if if not already
+        if not isinstance(df[self._col_names[0]].iloc[0],
+                          uncertainties.core.Variable):
+            df[self._col_names[0]] = unumpy.uarray(df[self._col_names[0]],
+                                                   df[self._col_names[1]] \
+                                                       * df[self._col_names[0]])
+        # create nom_val e abs_sdev columns if not already there
+        if self._col_names[2] not in df.columns:
+            df[self._col_names[2]] = df[self._col_names[0]].apply(lambda x: x.n)
+        if self._col_names[3] not in df.columns:
+            df[self._col_names[3]] = df[self._col_names[2]] * df[self._col_names[1]]
         return df
 
     @property
@@ -193,18 +215,22 @@ class Sensitivity:
     @property
     def upper(self):
         up = self.data.copy()
-        up.S = up.S + up['stat. err.'] * up.S
+        up[self._col_names[0]] = (up[self._col_names[0]] +
+                                  up[self._col_names[3]]).apply(
+                                      AffineScalarFun_2_Variable)
         return self.from_df(up)
 
     @property
     def lower(self):
         low = self.data.copy()
-        low.S = low.S - low['stat. err.'] * low.S
+        low[self._col_names[0]] = (low[self._col_names[0]] -
+                                   low[self._col_names[3]]).apply(
+                                       AffineScalarFun_2_Variable)
         return self.from_df(low)
 
     def observe(self, observable: str):
-        df = self.data.reset_index().query("Observable == @observable")\
-            .set_index(["Observable", "N", "MT", "E [MeV]"])
+        df = self.data.reset_index().query(
+                self._idx_names[0] + " == @observable").set_index(self._idx_names)
         return self.__class__.from_df(df)
 
     def query(self, query):
