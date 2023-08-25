@@ -5,6 +5,12 @@ Created on Thu Jun 22 14:05:51 2023
 @author: fgrimald
 """
 import pandas as pd
+import numpy as np
+
+# equality does not work with uncertainty
+from uncertainties import unumpy
+
+from functions import check_ufloat_equality
 
 import SEAT.Serpent2UncertaintyPropagation.MomentumPropagation.SensitivitySuite as SS
 
@@ -34,9 +40,11 @@ class Test_Sensitivity:
                                      ("b", "Pu239", "(z,fission)", 1e-7),
                                      ("b", "Pu239", "(z,fission)", 5.4e-7),],
                                      names=['Observable', 'N', 'MT', 'E [MeV]'])
-    df = pd.DataFrame({"S": [1, 2, 3, 4, 5, 6, 7, 8],
-                       "stat. err.": [.1, .1, .1, .1, .1, .1, .1, .1]},
-                      index=idx)
+    s_ = np.array([1, 2, 3, 4, 5, 6, 7, 8])
+    u_ = np.array([.1, .1, .1, .1, .1, .1, .1, .1]) # absolute statistical uncertainty
+
+    df = pd.DataFrame({"S": unumpy.uarray(s_, u_), "stat. err.": u_ / s_,
+                       "nom_val": s_, "abs_sdev": u_}, index=idx)
 
     reference = SS.Sensitivity.from_df(df)
 
@@ -60,13 +68,19 @@ class Test_Sensitivity:
         pass
 
     def test_upper(self):
-        assert ((self.reference.upper.data.S == self.df.S + self.df.S * self.df["stat. err."]).all()).all()
+        up = self.df.S + self.df.S.apply(lambda x: x.nominal_value) * self.df["stat. err."]
+        assert (self.reference.upper.data.index == up.index).all()
+        assert np.array([check_ufloat_equality(i, j) for i, j
+                         in zip(self.reference.upper.data.S, up)]).all()
 
     def test_lower(self):
-        assert ((self.reference.lower.data.S == self.df.S - self.df.S * self.df["stat. err."]).all()).all()
+        low = self.df.S - self.df.S.apply(lambda x: x.nominal_value) * self.df["stat. err."]
+        assert (self.reference.lower.data.index == low.index).all()
+        assert np.array([check_ufloat_equality(i, j) for i, j
+                         in zip(self.reference.lower.data.S, low)]).all()
 
     def test_observe(self):
         assert ((self.reference.observe("a").data == self.df.iloc[:4]).all()).all()
 
     def test_query(self):
-        assert ((self.reference.query("S == 1").data == self.df.iloc[0]).all()).all()
+        assert ((self.reference.query("nom_val == 1").data == self.df.iloc[0]).all()).all()

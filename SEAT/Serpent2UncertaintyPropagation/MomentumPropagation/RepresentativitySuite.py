@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 import SEAT.Serpent2UncertaintyPropagation.MomentumPropagation.SensitivitySuite as SS
 import SEAT.Serpent2UncertaintyPropagation.MomentumPropagation.CovarianceSuite as CS
@@ -66,8 +65,13 @@ def stdev(s1: pd.DataFrame, cov: pd.DataFrame) -> pd.DataFrame:
     -------
     pd.DataFrame of the computed standard deviation
 
+    Note:
+    -----
+    This is implemented with **0.5 rather than with np.sqrt() as that function
+    only takes float arguments and now we work with ufloats.
+
     """
-    return np.sqrt(sandwich(s1, cov, s1))
+    return sandwich(s1, cov, s1)**0.5
 
 def representativity(s1: pd.DataFrame, cov: pd.DataFrame, s2: pd.DataFrame) -> pd.DataFrame:
     """
@@ -94,36 +98,15 @@ def representativity(s1: pd.DataFrame, cov: pd.DataFrame, s2: pd.DataFrame) -> p
     d = stdev(s1, cov) * stdev(s2, cov)
     return n / d
 
-def u_sandwich(s1: pd.DataFrame, us1: pd.DataFrame, cov: pd.DataFrame,
-               s2: pd.DataFrame, us2: pd.DataFrame):
-    V1 = pd.concat([us1, us2], axis=0).loc[cov.index] **2
-    SS = pd.concat([s1, s2], axis=1)
-    V2 = SS.loc[cov.index].T.dot(cov).melt().set_index(SS.index.names) **2
-    return np.sqrt(V1.T.dot(V2))
-
-def u_representativity(s1: pd.DataFrame, us1: pd.DataFrame, cov: CS.Covariance,
-                       s2: pd.DataFrame, us2: pd.DataFrame):
-    A = s2 - (representativity(s1, cov, s2) * np.sqrt(sandwich(s2, cov, s2) / sandwich(s1, cov, s1))).S.values[0] * s1
-    B = s1 - (representativity(s1, cov, s2) * np.sqrt(sandwich(s1, cov, s1) / sandwich(s2, cov, s2))).S.values[0] * s2
-         
-    Sr1 = 1/(stdev(s1, cov) * stdev(s2, cov)).S.values[0] * A.T @ cov
-    Sr2 = 1/(stdev(s1, cov) * stdev(s2, cov)).S.values[0] * B.T @ cov
-
-    # Src = C # not implemented yet
-    # UC = pd.DataFrame(0, idx_M, idx_M) if UC is None else UC
-    return np.sqrt((Sr1 **2).dot(us1 **2) + (Sr2 **2).dot(us2 **2))
-
 
 class SCS:
     """
     Container of sensitivity and covariance information.
     """
-    def __init__(self, s1: SS.Sensitivity, us1: pd.DataFrame,
-                 cov: pd.DataFrame, s2:  SS.Sensitivity, us2: pd.DataFrame):
+    def __init__(self, s1: SS.Sensitivity, cov: pd.DataFrame,
+                 s2:  SS.Sensitivity):
         self.s1 = s1
-        self.us1 = us1
         self.s2 = s2
-        self.us2 = us2
         self.cov = cov
 
     def _get_sharing(self, mat, mt=None):
@@ -136,9 +119,9 @@ class SCS:
 
     @property
     def idx(self) -> pd.MultiIndex:
-        idx1 = self.s1.idx.droplevel(0)  # removing the observable information
-        idx2 = self.s2.idx.droplevel(0)  # removing the observable information
-        return self.cov.index.intersection(idx1).intersection(idx2)#.intersection(self.us1.index).intersection(self.us2.index)
+        idx1 = self.s1.idx.droplevel("Observable")  # removing the observable information
+        idx2 = self.s2.idx.droplevel("Observable")  # removing the observable information
+        return self.cov.index.intersection(idx1).intersection(idx2)
 
     @property
     def s1_(self) -> pd.DataFrame:
@@ -151,16 +134,6 @@ class SCS:
         return s.loc[self.idx].S
 
     @property
-    def us1_(self) -> pd.DataFrame:
-        s = self.us1.data.droplevel("Observable")
-        return s.loc[self.idx]
-
-    @property
-    def us2_(self) -> pd.DataFrame:
-        s = self.us2.data.droplevel("Observable")
-        return s.loc[self.idx]
-
-    @property
     def cov_(self) -> pd.DataFrame:
         return self.cov.loc[self.idx, self.idx]
 
@@ -169,26 +142,8 @@ class SCS:
         return sandwich(self.s1_, self.cov_, self.s2_)
 
     @property
-    def u_sandwich(self) -> pd.DataFrame:
-        """
-        Propagates the sensitivity statistical error to the sandwich rule.
-        Assumes no correlation.
-
-        """
-        return u_sandwich(self.s1_, self.us1_, self.cov_, self.s2_, self.us2_)
-
-    @property
     def representativity(self) -> pd.DataFrame:
         return representativity(self.s1_, self.cov_, self.s2_)
-
-    @property
-    def u_representativity(self) -> pd.DataFrame:
-        """
-        Propagates the sensitivity statistical error to the representativity.
-        Assumes no correlation.
-
-        """
-        return u_representativity(self.s1_, self.us1_, self.cov_, self.s2_, self.us2_)
 
     @property
     def reaction_wise(self) -> pd.Series:
