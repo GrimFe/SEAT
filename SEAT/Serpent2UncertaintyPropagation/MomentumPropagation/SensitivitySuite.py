@@ -195,8 +195,8 @@ class Sensitivity:
         if not isinstance(df[self._col_names[0]].iloc[0],
                           uncertainties.core.Variable):
             df[self._col_names[0]] = unumpy.uarray(df[self._col_names[0]],
-                                                   df[self._col_names[1]] \
-                                                       * df[self._col_names[0]])
+                                                   abs(df[self._col_names[1]] *
+                                                       df[self._col_names[0]]))
         # create nom_val e abs_sdev columns if not already there
         if self._col_names[2] not in df.columns:
             df[self._col_names[2]] = df[self._col_names[0]].apply(lambda x: x.n)
