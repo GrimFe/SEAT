@@ -104,7 +104,7 @@ class SCS:
     Container of sensitivity and covariance information.
     """
     def __init__(self, s1: SS.Sensitivity, cov: pd.DataFrame,
-                 s2:  SS.Sensitivity):
+                 s2: SS.Sensitivity):
         self.s1 = s1
         self.s2 = s2
         self.cov = cov
