@@ -98,11 +98,16 @@ def sts2df(reader, drop_total: bool=True, observe=None) -> pd.DataFrame:
     ene = get_ene(reader)
 
     out = []
+    observe_ = observe if observe is not None else reader.sensitivities.keys()
+    
     for obs, sens in reader.sensitivities.items():
-        if obs in observe:
-            out.append(pd.DataFrame(sens.reshape(len(zai) * len(pert) * len(ene), 2),
-                       index=pd.MultiIndex.from_product([zai, pert, ene], names=["N", "MT", "E [MeV]"]),
-                       columns=["S", "stat. err."]).reset_index().assign(Observable=obs))
+        if obs in observe_:
+            out.append(pd.DataFrame(
+                            sens.reshape(len(zai) * len(pert) * len(ene), 2),
+                            index=pd.MultiIndex.from_product(
+                                [zai, pert, ene], names=["N", "MT", "E [MeV]"]),
+                            columns=["S", "stat. err."]
+                            ).reset_index().assign(Observable=obs))
     # k, b = None, None
     # if 'keff' in reader.sensitivities.keys() and 'keff' == observable:
     #     k = pd.DataFrame(reader.sensitivities["keff"].reshape(len(zai) * len(pert) * len(ene), 2),
@@ -135,10 +140,9 @@ class Sensitivity:
     _idx_names = ['Observable', 'N', 'MT', 'E [MeV]']
     _col_names = ['S', 'stat. err.', 'nom_val', 'abs_sdev']  # colum names not necessarily limited to this
 
-    def __init__(self, file: str, drop_total: bool=True, observable: str=None, concat=None):
+    def __init__(self, file: str, drop_total: bool=True, concat=None):
         self.file = file
         self.drop_total = drop_total
-        self.observable = observable
         self.concat = concat  # things to add to the sensitivity vector in S.data
 
     @classmethod
@@ -161,15 +165,15 @@ class Sensitivity:
         elif self._csv:
             idx = self.data.index
         else:
-            obs = [self.observable]
             zai = get_zais(self.reader)
             try:
                 pert = get_perts_mt(self.reader)
             except KeyError:
                 pert = get_perts_rea(self.reader)        
             ene = get_ene(self.reader)
+            obs = self.observables
             idx = pd.MultiIndex.from_product([obs, zai, pert, ene],
-                                          names=self._idx_names)
+                                             names=self._idx_names)
         if self.concat is not None:
             idx = idx.append(self.concat.index)
         if self.drop_total:
@@ -188,7 +192,7 @@ class Sensitivity:
             if self._csv_index is not None:
                 df = df.set_index(self._csv_index)
         else:
-            df = sts2df(sts.read(self.file), self.drop_total, [self.observable])
+            df = sts2df(sts.read(self.file), self.drop_total)
         if self.concat is not None:
             df = pd.concat([df, self.concat])
         # uncertain sensitivities with uncertainties.py if if not already
@@ -210,7 +214,7 @@ class Sensitivity:
 
     @property
     def observables(self):
-        return sts.read(self.file).sensitivities.keys()
+        return self.reader.sensitivities.keys()
 
     @property
     def upper(self):
@@ -228,7 +232,7 @@ class Sensitivity:
                                        AffineScalarFun_2_Variable)
         return self.from_df(low)
 
-    def observe(self, observable: str):
+    def observe(self, observable: str):  # should this be .loc[]?
         df = self.data.reset_index().query(
                 self._idx_names[0] + " == @observable").set_index(self._idx_names)
         return self.__class__.from_df(df)
