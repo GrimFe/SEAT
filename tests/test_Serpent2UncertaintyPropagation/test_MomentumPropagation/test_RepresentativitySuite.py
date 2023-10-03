@@ -75,6 +75,12 @@ class Test_SCS:
                                             ("(z,fission)", 5.4e-7)],
                                      names=['MT', 'E [MeV]'])
 
+    # All the nuclides in the two systems for which a covariance entry exists are reported
+    union_intersection_idx = pd.MultiIndex.from_tuples([("U235", "(z,fission)", 1e-7),
+                                                        ("U235", "(z,fission)", 5.4e-7),
+                                                        ('U238', '(z,fission)',   4e-06)],
+                                                        names=['N', 'MT', 'E [MeV]'])
+
     def test_get_sharing(self):
         a, b, c = self.scs._get_sharing("U235")
         assert (a.index == self.shared_idx).all()
@@ -89,46 +95,37 @@ class Test_SCS:
                  in zip(c.S, unumpy.uarray([4, 5], [0.04, 0.05]))]).all()
 
     def test_idx(self):
-        idx = pd.MultiIndex.from_tuples([("U235", "(z,fission)", 1e-7),
-                                         ("U235", "(z,fission)", 5.4e-7)],
-                                         names=['N', 'MT', 'E [MeV]'])
-        assert (self.scs.idx == idx).all()
+        assert (self.scs.idx == self.union_intersection_idx).all()
 
     def test_s1_(self):
-        idx = pd.MultiIndex.from_tuples([("U235", "(z,fission)", 1e-7),
-                                         ("U235", "(z,fission)", 5.4e-7)],
-                                         names=['N', 'MT', 'E [MeV]'])
-        assert (self.scs.s1_.index == idx).all()
+
+        assert (self.scs.s1_.index == self.union_intersection_idx).all()
         assert np.array([check_ufloat_equality(i, j) for i, j
                  in zip(self.scs.s1_,
-                        unumpy.uarray([1, 2], [0.01, 0.02]))]).all()
+                        unumpy.uarray([1, 2, 3], [0.01, 0.02, 0.03]))]).all()
 
     def test_s2_(self):
-        idx = pd.MultiIndex.from_tuples([("U235", "(z,fission)", 1e-7),
-                                         ("U235", "(z,fission)", 5.4e-7)],
-                                         names=['N', 'MT', 'E [MeV]'])
-        assert (self.scs.s2_.index == idx).all()
+        assert (self.scs.s2_.index == self.union_intersection_idx).all()
         assert np.array([check_ufloat_equality(i, j) for i, j
                  in zip(self.scs.s2_,
-                        unumpy.uarray([4, 5], [0.04, 0.05]))]).all()
+                        unumpy.uarray([4, 5, 0], [0.04, 0.05, 0]))]).all()
 
     def test_cov_(self):
-        idx = pd.MultiIndex.from_tuples([("U235", "(z,fission)", 1e-7),
-                                         ("U235", "(z,fission)", 5.4e-7)],
-                                         names=['N', 'MT', 'E [MeV]'])
-        assert ((self.scs.cov_ == pd.DataFrame([[1, .1],
-                                              [.1, 1]],
-                                             index=idx,
-                                             columns=idx)).all()).all()
+        assert ((self.scs.cov_ == pd.DataFrame([[1. , 0.1, 0.2],
+                                                [0.1, 1. , 0.3],
+                                                [0.2, 0.3, 1. ]],
+                                                index=self.union_intersection_idx,
+                                                columns=self.union_intersection_idx
+                                                )).all()).all()
 
     def test_sandwich(self):
         assert check_ufloat_equality(self.scs.sandwich,
-                                     ufloat(15.3, 0.1643715303816327))
+                                     ufloat(22.2, 0.214788267836025))
 
     def test_representativity(self):
         assert check_ufloat_equality(self.scs.representativity,
-                                     ufloat(0.9814954576223638,
-                                            0.0015588325271614727))
+                                     ufloat(0.7552593373581465,
+                                            0.002761092095039872))
 
     def test_reaction_wise(self):
         pass
@@ -144,11 +141,15 @@ class Test_SCS:
 
     def test_stdev(self):
         assert check_ufloat_equality(self.scs.stdev(1),
-                                     ufloat(2.32379000772445,
-                                            0.01879716290649558))
+                                     ufloat(4.381780460041329,
+                                            0.02968585521759479))
         assert check_ufloat_equality(self.scs.stdev(2),
                                      ufloat(6.708203932499369,
                                             0.0483735464897913))
+
+    def test_stdev_no_unc(self):
+        assert self.scs.stdev_no_unc(1) == 4.381780460041329
+        assert self.scs.stdev_no_unc(2) == 6.708203932499369
 
     def test_nuclide_apportion(self):
         pass
