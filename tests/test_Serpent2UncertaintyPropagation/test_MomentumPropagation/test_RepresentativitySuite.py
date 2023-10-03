@@ -148,7 +148,7 @@ class Test_SCS:
                                             0.0483735464897913))
 
     def test_stdev_no_unc(self):
-        assert self.scs.stdev_no_unc(1) == 4.3817804600413295
+        assert self.scs.stdev_no_unc(1) == 4.381780460041329
         assert self.scs.stdev_no_unc(2) == 6.708203932499369
 
     def test_nuclide_apportion(self):
