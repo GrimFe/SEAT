@@ -120,7 +120,6 @@ def drop_uncertainty_calc(func):
         return result
     return wrapper
 
-
 class SCS:
     """
     Container of sensitivity and covariance information.
@@ -215,7 +214,6 @@ class SCS:
     def s2_(self) -> pd.Series:
         s = self.s2.data.droplevel("Observable")
         return self._zero_filled_s(s)
-        
 
     @property
     def cov_(self) -> pd.DataFrame:

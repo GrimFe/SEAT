@@ -98,6 +98,7 @@ class Test_SCS:
         assert (self.scs.idx == self.union_intersection_idx).all()
 
     def test_s1_(self):
+
         assert (self.scs.s1_.index == self.union_intersection_idx).all()
         assert np.array([check_ufloat_equality(i, j) for i, j
                  in zip(self.scs.s1_,
