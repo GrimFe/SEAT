@@ -3,3 +3,6 @@
 .coverage
 __pycache__/
 .spyproject/
+tmp.txt
+debug.py
+.vscode/

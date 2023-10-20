@@ -4,7 +4,103 @@ Created on Tue Feb  7 14:11:04 2023
 
 @author: fgrimald
 """
-# from SEAT.Serpent2InputWriter import reformat
+
+from SEAT.Serpent2InputWriter.geometry import Surface
+from SEAT.Serpent2InputWriter.base import flatten
+
+
+def intersect(surfaces: list[Surface]) -> list:
+    """
+    Handles the surface intersection operator ('' in Serpent 2).
+
+    Parameters
+    ----------
+    surfaces : list[SEAT.Surface]
+        the `SEAT.Surface` instances to intersect.
+
+    Returns
+    -------
+    list
+        the `SEAT.Surface` instances with operator modified to be also
+        intersection.
+
+    """
+    flat = flatten(surfaces)
+    out = [flat[0].copy()]
+    for s in flat[1:]:
+        new = s.copy()
+        new._operator = '' + new._operator
+        out.append(new)
+    return out
+
+
+def unite(surfaces: list[Surface]) -> list:
+    """
+    Handles the surface union operator (':' in Serpent 2).
+
+    Parameters
+    ----------
+    surfaces : list[SEAT.Sruface]
+        the `SEAT.Surface` instances to intersect.
+
+    Returns
+    -------
+    list
+        the `SEAT.Surface` instances with operator modified to be also union.
+
+    """
+    flat = flatten(surfaces)
+    out = [flat[0].copy()]
+    for s in flat[1:]:
+        new = s.copy()
+        new._operator = ' : ' + new._operator
+        out.append(new)
+    return out
+
+def inside(surface: Surface):
+    """
+    Handles the surface surface complement operator ('-' in Serpent 2)
+    for single surfaces.
+
+    Parameters
+    ----------
+    surfaces : SEAT.Surface
+        the `SEAT.Surface` instance to complement.
+
+    Returns
+    -------
+    SEAT.Surface
+        the complemented `SEAT.Surface` instance.
+    """
+    return surface.copy().flip()
+
+def surface_complement(surfaces: Surface | list[Surface]) -> list:
+    """
+    Handles the surface surface complement operator ('-' in Serpent 2)
+    for single or multiple surfaces.
+
+    Parameters
+    ----------
+    surfaces : SEAT.Surface | list[SEAT.Surface]
+        the `SEAT.Surface` instance(s) to complement.
+
+    Returns
+    -------
+    list
+        the `SEAT.Surface` instances with operator modified to be also
+        complement.
+
+    """
+    if isinstance(surfaces, Surface):
+        return [inside(surfaces)]
+    else:
+        flat = flatten(surfaces)
+        out = []
+        for s in flat:
+            new = s.copy()
+            new.flip()
+            out.append(new)
+        return out
 
 def _p_params(offset: float) -> str:
     """
