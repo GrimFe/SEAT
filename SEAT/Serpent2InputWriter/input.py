@@ -200,16 +200,17 @@ class GeometryPlot(Plot):
     max2 : float = None
 
     def __str__(self):
-        string = str(AllowedFields.PLOT_KIND[self.kind]) + ' '
+        string = 'plot '
+        string += str(AllowedFields.PLOT_KIND[self.kind]) + ' '
         if self._importance is not None:
             string += self._importance + ' '
         string += str(self.xpix) + ' '
         string += str(self.ypix) + ' '
-        string += str(self.pos) + ' '
-        string += str(self.min1) + ' '
-        string += str(self.max1) + ' '
-        string += str(self.min2) + ' '
-        string += str(self.max2) + '\n'
+        string += str(self.pos) + ' ' if self.pos is not None else ' '
+        string += str(self.min1) + ' ' if self.min1 is not None else ' '
+        string += str(self.max1) + ' ' if self.max1 is not None else ' '
+        string += str(self.min2) + ' ' if self.min2 is not None else ' '
+        string += str(self.max2) + '\n' if self.max2 is not None else '\n'
         return string
 
     @property

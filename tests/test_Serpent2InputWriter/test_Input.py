@@ -41,7 +41,7 @@ class Test_GeometryPlot:
         assert self.plt._importance is None
 
     def test_str(self):
-        test = f'1 {self.xpix} {self.ypix} {self.pos} {self.min1} {self.max1}' +\
+        test = f'plot 1 {self.xpix} {self.ypix} {self.pos} {self.min1} {self.max1}' +\
             f' {self.min2} {self.max2}\n'
         assert self.plt.__str__() == test
 
